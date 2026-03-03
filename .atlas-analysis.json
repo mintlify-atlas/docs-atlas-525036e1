@@ -1,0 +1,122 @@
+{
+  "projectType": "cli-tool",
+  "projectName": "Walrus",
+  "projectDescription": "A fast, expressive programming language with bytecode VM, JIT compilation, and garbage collection.",
+  "theme": "aspen",
+  "primaryColor": "#2E7D9A",
+  "lightColor": "#4A9FBF",
+  "darkColor": "#1A5A75",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "introduction",
+              "installation",
+              "quickstart"
+            ]
+          },
+          {
+            "group": "Language Guide",
+            "pages": [
+              "language/syntax",
+              "language/types",
+              "language/variables",
+              "language/operators",
+              "language/control-flow",
+              "language/functions",
+              "language/structs",
+              "language/format-strings"
+            ]
+          },
+          {
+            "group": "Standard Library",
+            "pages": [
+              "stdlib/overview",
+              "stdlib/io",
+              "stdlib/sys",
+              "stdlib/math",
+              "stdlib/builtins"
+            ]
+          },
+          {
+            "group": "Advanced Topics",
+            "pages": [
+              "advanced/vm-architecture",
+              "advanced/bytecode",
+              "advanced/garbage-collection",
+              "advanced/jit-compilation",
+              "advanced/compiler-optimizations"
+            ]
+          },
+          {
+            "group": "CLI Reference",
+            "pages": [
+              "cli/commands",
+              "cli/repl",
+              "cli/debugging"
+            ]
+          },
+          {
+            "group": "Development",
+            "pages": [
+              "development/building",
+              "development/testing",
+              "development/benchmarking",
+              "development/vscode-lsp",
+              "development/contributing"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Examples",
+        "groups": [
+          {
+            "group": "Code Examples",
+            "pages": [
+              "examples/hello-world",
+              "examples/fizzbuzz",
+              "examples/quicksort",
+              "examples/file-io",
+              "examples/web-scraper"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "Bytecode VM with stack-based execution",
+    "Optional JIT compilation via Cranelift",
+    "Mark-and-sweep garbage collector",
+    "First-class functions and closures",
+    "Structs with static methods",
+    "Comprehensive standard library (I/O, system, math)",
+    "Interactive REPL and debugger",
+    "Language Server Protocol (LSP) support",
+    "Tail call optimization",
+    "Format strings (f-strings)"
+  ],
+  "publicApiSurface": [
+    "walrus <file.walrus> - Execute a Walrus script",
+    "walrus - Start interactive REPL",
+    "walrus -c <file.walrus> - Compile to bytecode and run in VM",
+    "walrus --disassemble <file.walrus> - Show bytecode disassembly",
+    "walrus --debugger <file.walrus> - Start interactive debugger",
+    "walrus --jit <file.walrus> - Enable JIT compilation",
+    "walrus --jit-stats <file.walrus> - Show JIT profiling statistics",
+    "len(x) - Get length of collection",
+    "str(x) - Convert value to string",
+    "type(x) - Get type name",
+    "input(prompt) - Read user input",
+    "__gc__() - Trigger garbage collection",
+    "__heap_stats__() - Get heap statistics",
+    "import \"std/io\" - File I/O operations",
+    "import \"std/sys\" - System operations",
+    "import \"std/math\" - Math and random utilities"
+  ]
+}
