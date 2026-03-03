@@ -135,6 +135,66 @@ if type(value) == "list" {
 }
 ```
 
+### print
+
+Outputs a value to stdout without a trailing newline.
+
+```walrus
+print(value);
+```
+
+<ParamField path="value" type="any" required>
+  The value to print
+</ParamField>
+
+<ResponseField name="return" type="void">
+  No return value
+</ResponseField>
+
+**Example:**
+
+```walrus
+// Print without newline
+print("Hello, ");
+print("World!");  // Output: Hello, World!
+
+// Print multiple values on same line
+for i in 0..5 {
+    print(i);
+    print(" ");
+}
+// Output: 0 1 2 3 4 
+```
+
+### println
+
+Outputs a value to stdout with a trailing newline.
+
+```walrus
+println(value);
+```
+
+<ParamField path="value" type="any" required>
+  The value to print
+</ParamField>
+
+<ResponseField name="return" type="void">
+  No return value
+</ResponseField>
+
+**Example:**
+
+```walrus
+// Print with newline
+println("Hello, World!");
+println(42);
+println([1, 2, 3]);
+
+// Format strings work with println
+let name = "Alice";
+println(f"Hello, {name}!");
+```
+
 ### input
 
 Reads user input from stdin with an optional prompt.
