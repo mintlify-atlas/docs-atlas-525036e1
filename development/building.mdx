@@ -1,0 +1,167 @@
+---
+title: Building from source
+description: Build instructions, release builds, and optimization options for the Walrus programming language
+---
+
+## Prerequisites
+
+To build Walrus from source, you'll need:
+
+- [Rust](https://www.rust-lang.org/tools/install) (latest stable version)
+- Git
+
+## Clone the repository
+
+```bash
+git clone https://github.com/sb2bg/walrus.git
+cd walrus
+```
+
+## Basic build
+
+<Steps>
+  <Step title="Build in debug mode">
+    For development and debugging:
+
+    ```bash
+    cargo build
+    ```
+
+    The binary will be located at `target/debug/walrus`.
+  </Step>
+
+  <Step title="Run directly with Cargo">
+    You can also build and run in one command:
+
+    ```bash
+    # Execute a file
+    cargo run -- file.walrus
+
+    # Start REPL
+    cargo run
+    ```
+  </Step>
+</Steps>
+
+## Release builds
+
+For optimal performance, build with release optimizations:
+
+```bash
+cargo build --release
+```
+
+The optimized binary will be at `target/release/walrus`.
+
+### Release profile configuration
+
+Walrus includes debug symbols even in release builds for better profiling:
+
+```toml
+[profile.release]
+debug = true
+```
+
+## Build features
+
+### JIT compilation support
+
+Walrus includes an optional **Just-In-Time (JIT) compiler** powered by [Cranelift](https://cranelift.dev/) that can dramatically speed up hot loops:
+
+```bash
+# Build with JIT feature enabled
+cargo build --release --features jit
+```
+
+The JIT feature includes the following dependencies:
+- `cranelift-codegen`
+- `cranelift-frontend`
+- `cranelift-jit`
+- `cranelift-module`
+- `cranelift-native`
+- `target-lexicon`
+
+### JIT profiling
+
+Enable JIT profiling output for performance analysis:
+
+```bash
+cargo build --release --features "jit,jit-profiling"
+```
+
+### Memory profiling
+
+Build with heap profiling support using dhat:
+
+```bash
+cargo build --release --features dhat-heap
+```
+
+## Binaries
+
+The Walrus workspace produces two binaries:
+
+### Main interpreter
+
+```bash
+cargo build --release
+./target/release/walrus
+```
+
+Supports multiple execution modes:
+- Tree-walking interpreter (default)
+- Bytecode VM with `-c` flag
+- Disassembler with `-d` flag
+- JIT compilation with `--jit` flag (if built with `jit` feature)
+
+### Language server
+
+```bash
+cargo build --release --bin walrus-lsp
+./target/release/walrus-lsp
+```
+
+Used by the VS Code extension for LSP features.
+
+## Custom allocator
+
+Walrus uses [mimalloc](https://github.com/microsoft/mimalloc) as a custom allocator for improved allocation performance. This is automatically included in all builds.
+
+## Build dependencies
+
+Key dependencies compiled during the build:
+
+- **LALRPOP** - Parser generator (build-time)
+- **SlotMap** - Arena-based memory management
+- **rustc-hash** - Fast hashing (FxHashMap/FxHashSet)
+- **strena** - String interning
+- **tower-lsp** - LSP server implementation
+- **tokio** - Async runtime for LSP
+
+See `Cargo.toml` for the complete dependency list.
+
+## Build troubleshooting
+
+### Parser generation
+
+If you modify the grammar files, LALRPOP will automatically regenerate the parser during build. This happens via the build script.
+
+### Rust edition
+
+Walrus uses Rust edition 2024:
+
+```toml
+[package]
+edition = "2024"
+```
+
+Ensure you have a compatible Rust version installed.
+
+### Clean rebuild
+
+If you encounter build issues, try a clean rebuild:
+
+```bash
+cargo clean
+cargo build --release
+```

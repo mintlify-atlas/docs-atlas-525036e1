@@ -1,0 +1,87 @@
+---
+title: Standard library overview
+description: Learn about Walrus's standard library modules and import system
+---
+
+Walrus provides a standard library through an import system that gives you access to file I/O, system operations, and math utilities. Modules are imported using the `import` statement and return a dictionary of functions.
+
+## Import system
+
+Modules are imported using string literals that specify the module path:
+
+```walrus
+import "std/io";
+import "std/sys";
+import "std/math";
+```
+
+### Import with alias
+
+You can alias imported modules for shorter or more descriptive names:
+
+```walrus
+import "std/sys" as system;
+import "std/io" as files;
+
+let home = system.env_get("HOME");
+files.write_file("output.txt", "Hello!");
+```
+
+## Available modules
+
+The Walrus standard library includes three main modules:
+
+<CardGroup cols={3}>
+  <Card title="std/io" icon="file" href="/stdlib/io">
+    File I/O operations including reading, writing, and handle-based streaming
+  </Card>
+  <Card title="std/sys" icon="terminal" href="/stdlib/sys">
+    System operations like environment variables, command-line arguments, and process control
+  </Card>
+  <Card title="std/math" icon="calculator" href="/stdlib/math">
+    Mathematical functions, constants, and random number generation
+  </Card>
+</CardGroup>
+
+## Module structure
+
+Each module exports functions as properties of a dictionary. After importing, you access functions using dot notation:
+
+```walrus
+import "std/io";
+
+// The import returns a dictionary with function properties
+let content = io.read_file("config.txt");
+io.write_file("output.txt", content);
+```
+
+## Error handling
+
+Standard library functions return error values or throw runtime errors when operations fail:
+
+```walrus
+import "std/io";
+import "std/sys";
+
+// Functions that may fail return void on error
+let value = sys.env_get("MISSING_VAR");
+if value == void {
+    println("Environment variable not found");
+}
+
+// File operations throw errors if they fail
+let handle = io.file_open("data.txt", "r");  // Error if file doesn't exist
+```
+
+## Built-in functions
+
+In addition to the standard library modules, Walrus provides [built-in functions](/stdlib/builtins) that are always available without importing:
+
+```walrus
+// No import needed for built-ins
+let count = len([1, 2, 3]);  // 3
+let name = str(42);           // "42"
+let kind = type(true);        // "bool"
+```
+
+See the [Built-in functions](/stdlib/builtins) page for the complete reference.

@@ -1,0 +1,305 @@
+---
+title: Installation
+description: Install Walrus and set up your development environment
+---
+
+## Prerequisites
+
+Walrus is built in Rust and requires the Rust toolchain to build from source.
+
+<Steps>
+  <Step title="Install Rust">
+    If you don't have Rust installed, download and install it from [rust-lang.org](https://www.rust-lang.org/tools/install):
+
+    ```bash
+    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+    ```
+
+    After installation, restart your terminal and verify the installation:
+
+    ```bash
+    rustc --version
+    cargo --version
+    ```
+
+    <Note>
+      Walrus requires the latest stable version of Rust. Run `rustup update` to ensure you're up to date.
+    </Note>
+  </Step>
+
+  <Step title="Clone the repository">
+    Clone the Walrus repository from GitHub:
+
+    ```bash
+    git clone https://github.com/sb2bg/walrus.git
+    cd walrus
+    ```
+  </Step>
+
+  <Step title="Build Walrus">
+    Build Walrus in release mode for optimal performance:
+
+    ```bash
+    cargo build --release
+    ```
+
+    This will create the `walrus` binary at `target/release/walrus`.
+
+    <Tip>
+      The first build may take a few minutes as Cargo downloads and compiles dependencies.
+    </Tip>
+  </Step>
+
+  <Step title="Verify installation">
+    Test that Walrus is working correctly:
+
+    ```bash
+    cargo run -- --help
+    ```
+
+    You should see the Walrus command-line help information.
+  </Step>
+</Steps>
+
+## Optional: JIT compilation support
+
+Walrus includes an optional Just-In-Time (JIT) compiler powered by [Cranelift](https://cranelift.dev/) that can dramatically speed up hot loops by compiling them to native machine code.
+
+### Building with JIT enabled
+
+To build Walrus with JIT support, use the `jit` feature flag:
+
+```bash
+cargo build --release --features jit
+```
+
+### Performance impact
+
+The JIT compiler can provide significant speedups for computational workloads:
+
+| Benchmark | Interpreter | JIT | Speedup |
+| --- | --- | --- | --- |
+| 10K iterations × sum(0..1000) | 0.68s | 0.01s | **~68x** |
+
+<Note>
+  JIT compilation is most effective for hot integer range loops. See the [JIT documentation](/advanced/jit-compilation) for details on what code patterns can be JIT-compiled.
+</Note>
+
+## Running Walrus
+
+Once built, you can run Walrus in several ways:
+
+<Tabs>
+  <Tab title="Using cargo run">
+    During development, you can run Walrus directly with `cargo run`:
+
+    ```bash
+    # Execute a file
+    cargo run -- program.walrus
+
+    # Start REPL
+    cargo run
+
+    # Compile mode (explicit VM execution)
+    cargo run -- -c program.walrus
+
+    # Disassemble bytecode
+    cargo run -- -d program.walrus
+    ```
+  </Tab>
+
+  <Tab title="Direct execution">
+    Run the compiled binary directly:
+
+    ```bash
+    # Execute a file
+    ./target/release/walrus program.walrus
+
+    # Start REPL
+    ./target/release/walrus
+
+    # With JIT enabled (if built with --features jit)
+    ./target/release/walrus program.walrus --jit
+
+    # Show JIT statistics
+    ./target/release/walrus program.walrus --jit --jit-stats
+    ```
+  </Tab>
+
+  <Tab title="Add to PATH">
+    For convenience, add the Walrus binary to your PATH:
+
+    ```bash
+    # Add to ~/.bashrc, ~/.zshrc, or equivalent
+    export PATH="$PATH:/path/to/walrus/target/release"
+    ```
+
+    Then run Walrus from anywhere:
+
+    ```bash
+    walrus program.walrus
+    ```
+  </Tab>
+</Tabs>
+
+## Command-line options
+
+Walrus supports several command-line flags:
+
+| Option | Description |
+| --- | --- |
+| `<file>` | Execute a Walrus source file |
+| `-c, --compile` | Use bytecode compilation mode (VM execution) |
+| `-d, --disassemble` | Disassemble and display bytecode |
+| `--jit` | Enable JIT compilation (requires `jit` feature) |
+| `--jit-stats` | Show JIT profiling statistics |
+| `--no-jit-profile` | Disable JIT profiling (baseline comparison) |
+| `--help` | Display help information |
+
+## VS Code integration
+
+Walrus includes a Language Server Protocol (LSP) implementation and VS Code extension for enhanced development experience.
+
+<Steps>
+  <Step title="Build the language server">
+    ```bash
+    cargo build --release --bin walrus-lsp
+    ```
+  </Step>
+
+  <Step title="Install extension dependencies">
+    ```bash
+    cd vscode/walrus
+    npm install
+    ```
+  </Step>
+
+  <Step title="Launch extension development host">
+    Open `vscode/walrus` in VS Code and press `F5` to launch the Extension Development Host.
+  </Step>
+
+  <Step title="Open a Walrus file">
+    Open any `.walrus` file to get:
+    - Parse diagnostics
+    - Hover information for symbols, keywords, and builtins
+    - Scoped completion
+    - Signature help
+    - Document symbols
+    - Go-to-definition
+    - Find references
+    - Rename symbol
+    - Document highlights
+    - Syntax highlighting
+  </Step>
+</Steps>
+
+<Note>
+  The VS Code extension is currently in development and requires running the Extension Development Host. Full marketplace publication is planned for a future release.
+</Note>
+
+## Platform-specific builds
+
+The Walrus repository includes optimized build scripts for different platforms:
+
+<CodeGroup>
+
+```bash Linux
+./scripts/build-linux-optimized.sh
+```
+
+```bash Windows
+./scripts/build-windows-optimized.sh
+```
+
+```bash Generic
+./scripts/build-optimized.sh
+```
+
+</CodeGroup>
+
+## Development tools
+
+### Running tests
+
+Walrus includes a comprehensive test suite:
+
+```bash
+./scripts/run-tests.sh
+```
+
+### Benchmarks
+
+Compare Walrus performance against Python:
+
+```bash
+cd benchmarks
+./run_benchmarks.sh
+```
+
+### Profiling
+
+<Tabs>
+  <Tab title="Memory profiling">
+    Use dhat for memory profiling:
+
+    ```bash
+    ./scripts/dhat.sh
+    ```
+  </Tab>
+
+  <Tab title="CPU profiling (macOS)">
+    Use Instruments for CPU profiling:
+
+    ```bash
+    ./scripts/instruments.sh
+    ```
+  </Tab>
+</Tabs>
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Build fails with linker errors">
+    Ensure you have the necessary system development tools installed:
+
+    **Ubuntu/Debian:**
+    ```bash
+    sudo apt-get install build-essential
+    ```
+
+    **macOS:**
+    ```bash
+    xcode-select --install
+    ```
+  </Accordion>
+
+  <Accordion title="Rust version too old">
+    Update Rust to the latest stable version:
+
+    ```bash
+    rustup update stable
+    ```
+  </Accordion>
+
+  <Accordion title="JIT feature not available">
+    Make sure you built with the `jit` feature:
+
+    ```bash
+    cargo build --release --features jit
+    ```
+
+    The JIT feature requires Cranelift dependencies which are only compiled when explicitly enabled.
+  </Accordion>
+</AccordionGroup>
+
+## Next steps
+
+Now that you have Walrus installed, proceed to the quickstart guide to write your first program:
+
+<Card
+  title="Quickstart guide"
+  icon="rocket"
+  href="/quickstart"
+>
+  Write your first Walrus program in minutes
+</Card>

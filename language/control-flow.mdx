@@ -1,0 +1,603 @@
+---
+title: Control flow
+description: Master conditional statements, loops, and control flow in Walrus
+---
+
+Control flow statements allow you to control the execution path of your program. Walrus provides conditional statements, loops, and flow control keywords.
+
+## Conditional statements
+
+### if statements
+
+Execute code based on conditions:
+
+```walrus
+let age = 18;
+
+if age >= 18 {
+    println("Adult");
+}
+```
+
+### if-else statements
+
+Provide an alternative path:
+
+```walrus
+let score = 75;
+
+if score >= 60 {
+    println("Pass");
+} else {
+    println("Fail");
+}
+```
+
+### else-if chains
+
+Test multiple conditions:
+
+```walrus
+let grade = 85;
+let letter = "";
+
+if grade >= 90 {
+    letter = "A";
+} else if grade >= 80 {
+    letter = "B";
+} else if grade >= 70 {
+    letter = "C";
+} else if grade >= 60 {
+    letter = "D";
+} else {
+    letter = "F";
+}
+
+println(f"Grade: {letter}");
+```
+
+### Nested conditionals
+
+```walrus
+let has_ticket = true;
+let age = 15;
+
+if has_ticket {
+    if age < 18 {
+        println("Child ticket");
+    } else {
+        println("Adult ticket");
+    }
+} else {
+    println("No entry");
+}
+```
+
+## Loops
+
+### while loops
+
+Repeat while a condition is true:
+
+```walrus
+let count = 0;
+
+while count < 5 {
+    println(count);
+    count = count + 1;
+}
+// Prints: 0, 1, 2, 3, 4
+```
+
+#### Countdown example
+
+```walrus
+let countdown = 5;
+
+while countdown > 0 {
+    println(countdown);
+    countdown = countdown - 1;
+}
+println("Liftoff!");
+```
+
+#### Infinite loop with break
+
+```walrus
+let i = 0;
+
+while true {
+    println(i);
+    i = i + 1;
+    
+    if i >= 5 {
+        break;
+    }
+}
+```
+
+### for loops with ranges
+
+Iterate over a range of numbers:
+
+```walrus
+// Range from 0 to 9 (exclusive end)
+for i in 0..10 {
+    println(i);
+}
+
+// Range from 1 to 5
+for i in 1..6 {
+    println(f"Number {i}");
+}
+```
+
+<Note>
+Ranges in Walrus are half-open intervals: `a..b` includes `a` but excludes `b`.
+</Note>
+
+#### Dynamic ranges
+
+```walrus
+let n = 5;
+
+for i in 0..n {
+    println(i * i);
+}
+// Prints: 0, 1, 4, 9, 16
+```
+
+### for loops with lists
+
+Iterate over list elements:
+
+```walrus
+let fruits = ["apple", "banana", "cherry"];
+
+for fruit in fruits {
+    println(f"I like {fruit}");
+}
+```
+
+#### Processing list data
+
+```walrus
+let numbers = [10, 20, 30, 40, 50];
+let sum = 0;
+
+for num in numbers {
+    sum += num;
+}
+
+println(f"Sum: {sum}");  // Sum: 150
+```
+
+### for loops with dictionaries
+
+Iterate over dictionary entries:
+
+```walrus
+let person = {
+    "name": "Alice",
+    "age": 30,
+    "city": "Seattle"
+};
+
+for entry in person {
+    // Each entry is a tuple: (key, value)
+    println(entry);
+}
+```
+
+### Nested loops
+
+```walrus
+// Multiplication table
+for i in 1..6 {
+    for j in 1..6 {
+        print(str(i * j) + " ");
+    }
+    println("");
+}
+```
+
+## Flow control keywords
+
+### break statement
+
+Exit a loop early:
+
+```walrus
+for i in 0..10 {
+    if i == 5 {
+        break;  // Exit loop when i is 5
+    }
+    println(i);
+}
+// Prints: 0, 1, 2, 3, 4
+```
+
+#### Finding first match
+
+```walrus
+let numbers = [1, 3, 5, 8, 9, 12];
+let first_even = void;
+
+for num in numbers {
+    if num % 2 == 0 {
+        first_even = num;
+        break;
+    }
+}
+
+println(f"First even: {first_even}");  // First even: 8
+```
+
+### continue statement
+
+Skip to the next iteration:
+
+```walrus
+for i in 0..10 {
+    if i % 2 == 0 {
+        continue;  // Skip even numbers
+    }
+    println(i);
+}
+// Prints: 1, 3, 5, 7, 9
+```
+
+#### Filtering with continue
+
+```walrus
+let numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+let odd_sum = 0;
+
+for num in numbers {
+    if num % 2 == 0 {
+        continue;  // Skip even numbers
+    }
+    odd_sum += num;
+}
+
+println(f"Sum of odd numbers: {odd_sum}");  // 25
+```
+
+### break and continue in nested loops
+
+`break` and `continue` only affect the innermost loop:
+
+```walrus
+for i in 0..3 {
+    for j in 0..3 {
+        if j == 1 {
+            continue;  // Skips to next j
+        }
+        if j == 2 {
+            break;     // Exits inner loop only
+        }
+        println(f"{i}, {j}");
+    }
+}
+```
+
+<Warning>
+Walrus doesn't support labeled breaks or continues. `break` and `continue` always apply to the nearest enclosing loop.
+</Warning>
+
+## Practical examples
+
+### FizzBuzz
+
+```walrus
+for n in 1..101 {
+    let result = "";
+    
+    if n % 3 == 0 {
+        result += "Fizz";
+    }
+    
+    if n % 5 == 0 {
+        result += "Buzz";
+    }
+    
+    if result == "" {
+        result = str(n);
+    }
+    
+    println(result);
+}
+```
+
+### Prime number checker
+
+```walrus
+fn is_prime : n {
+    if n < 2 {
+        return false;
+    }
+    
+    let i = 2;
+    while i * i <= n {
+        if n % i == 0 {
+            return false;
+        }
+        i = i + 1;
+    }
+    
+    return true;
+}
+
+// Find primes up to 50
+for i in 2..51 {
+    if is_prime(i) {
+        println(i);
+    }
+}
+```
+
+### Input validation loop
+
+```walrus
+let valid_input = false;
+let attempts = 0;
+let max_attempts = 3;
+
+while not valid_input and attempts < max_attempts {
+    attempts += 1;
+    
+    // Simulate getting input (in real code, use input())
+    let value = attempts * 10;
+    
+    if value >= 10 and value <= 100 {
+        println(f"Valid input: {value}");
+        valid_input = true;
+    } else {
+        println("Invalid input, try again");
+    }
+}
+
+if not valid_input {
+    println("Max attempts reached");
+}
+```
+
+### Building filtered lists
+
+```walrus
+let numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+let evens = [];
+let odds = [];
+
+for num in numbers {
+    if num % 2 == 0 {
+        evens.push(num);
+    } else {
+        odds.push(num);
+    }
+}
+
+println(f"Evens: {evens}");  // [2, 4, 6, 8, 10]
+println(f"Odds: {odds}");    // [1, 3, 5, 7, 9]
+```
+
+### Searching in nested structures
+
+```walrus
+let users = [
+    {"name": "Alice", "age": 30},
+    {"name": "Bob", "age": 25},
+    {"name": "Charlie", "age": 35}
+];
+
+let found = false;
+
+for user in users {
+    if user["name"] == "Bob" {
+        println(f"Found Bob, age: {user['age']}");
+        found = true;
+        break;
+    }
+}
+
+if not found {
+    println("User not found");
+}
+```
+
+### Pattern matching with conditionals
+
+```walrus
+fn classify_number : n {
+    let category = "";
+    
+    if n < 0 {
+        category = "negative";
+    } else if n == 0 {
+        category = "zero";
+    } else if n < 10 {
+        category = "single digit";
+    } else if n < 100 {
+        category = "double digit";
+    } else {
+        category = "large number";
+    }
+    
+    return category;
+}
+
+for test in [-5, 0, 7, 42, 150] {
+    println(f"{test} is {classify_number(test)}");
+}
+```
+
+### Matrix iteration
+
+```walrus
+let matrix = [
+    [1, 2, 3],
+    [4, 5, 6],
+    [7, 8, 9]
+];
+
+for row in matrix {
+    for cell in row {
+        print(str(cell) + " ");
+    }
+    println("");
+}
+```
+
+## Common patterns
+
+<Tabs>
+  <Tab title="Accumulator">
+    ```walrus
+    let numbers = [1, 2, 3, 4, 5];
+    let sum = 0;
+    
+    for num in numbers {
+        sum += num;
+    }
+    
+    println(f"Sum: {sum}");
+    ```
+  </Tab>
+  
+  <Tab title="Counter">
+    ```walrus
+    let words = ["apple", "banana", "apple", "cherry", "apple"];
+    let apple_count = 0;
+    
+    for word in words {
+        if word == "apple" {
+            apple_count += 1;
+        }
+    }
+    
+    println(f"Apples: {apple_count}");
+    ```
+  </Tab>
+  
+  <Tab title="Filter">
+    ```walrus
+    let numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+    let filtered = [];
+    
+    for num in numbers {
+        if num > 5 {
+            filtered.push(num);
+        }
+    }
+    
+    println(filtered);  // [6, 7, 8, 9, 10]
+    ```
+  </Tab>
+  
+  <Tab title="Find">
+    ```walrus
+    let items = ["a", "b", "c", "d", "e"];
+    let target = "c";
+    let index = -1;
+    
+    for i in 0..len(items) {
+        if items[i] == target {
+            index = i;
+            break;
+        }
+    }
+    
+    println(f"Found at index: {index}");
+    ```
+  </Tab>
+</Tabs>
+
+## Best practices
+
+<AccordionGroup>
+  <Accordion title="Choose the right loop type">
+    - Use `for` with ranges when you need a counter
+    - Use `for` with collections when iterating elements
+    - Use `while` when the number of iterations is unknown
+    
+    ```walrus
+    // Good: for with range
+    for i in 0..10 {
+        println(i);
+    }
+    
+    // Good: for with collection
+    for item in items {
+        process(item);
+    }
+    
+    // Good: while with condition
+    while not done {
+        done = check_condition();
+    }
+    ```
+  </Accordion>
+  
+  <Accordion title="Avoid deeply nested conditionals">
+    Use early returns or refactor into functions:
+    
+    ```walrus
+    // Instead of deep nesting
+    if condition1 {
+        if condition2 {
+            if condition3 {
+                // do something
+            }
+        }
+    }
+    
+    // Use early returns
+    fn process : {
+        if not condition1 {
+            return;
+        }
+        if not condition2 {
+            return;
+        }
+        if not condition3 {
+            return;
+        }
+        // do something
+    }
+    ```
+  </Accordion>
+  
+  <Accordion title="Be careful with infinite loops">
+    Always ensure loop exit conditions are reachable:
+    
+    ```walrus
+    // Dangerous: might never exit
+    while true {
+        // Missing break condition
+    }
+    
+    // Better: clear exit condition
+    let max_iterations = 1000;
+    let count = 0;
+    
+    while true {
+        count += 1;
+        if count >= max_iterations or done {
+            break;
+        }
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Functions" icon="function" href="/language/functions">
+    Learn about function definitions and functional programming
+  </Card>
+  
+  <Card title="Structs" icon="cube" href="/language/structs">
+    Explore struct definitions and static methods
+  </Card>
+</CardGroup>

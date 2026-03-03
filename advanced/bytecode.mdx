@@ -1,0 +1,247 @@
+---
+title: Bytecode instruction set
+description: Complete reference for Walrus's 80+ bytecode opcodes and disassembly tools
+---
+
+Walrus compiles source code to a compact bytecode format that the VM executes. The instruction set includes 80+ opcodes optimized for common operations.
+
+## Instruction format
+
+Instructions are represented by the `Instruction` struct (`src/vm/opcode.rs:122`):
+
+```rust
+pub struct Instruction {
+    opcode: Opcode,  // 12 bytes (uses u32 indices)
+    span: Span,      // Source location for error messages
+}
+```
+
+Using `u32` indices instead of `usize` reduces instruction size from 16 to 12 bytes on 64-bit platforms, improving cache efficiency.
+
+## Core opcodes
+
+### Constants and literals
+
+- `LoadConst(index)` - load constant from constant pool
+- `LoadConst0`, `LoadConst1` - load constants at indices 0 or 1 (zero-operand optimization)
+- `True`, `False`, `Void` - push boolean/void literals
+
+### Local variables
+
+- `Load(index)` - load local variable at frame_pointer + index
+- `LoadLocal0` through `LoadLocal3` - specialized loads for first 4 locals
+- `Store` - push value to locals vector
+- `StoreAt(index)` - store value at specific local index
+- `Reassign(index)` - update existing local variable
+- `PopLocal(count)` - remove locals when scope ends
+
+### Global variables
+
+- `LoadGlobal(index)` - load global variable
+- `LoadGlobal0` through `LoadGlobal3` - specialized loads for first 4 globals
+- `StoreGlobal(index)` - store to global variable
+- `ReassignGlobal(index)` - update existing global
+
+### Arithmetic operations
+
+- `Add`, `Subtract`, `Multiply`, `Divide`, `Modulo`, `Power` - binary operations
+- `Negate` - unary negation
+- `AddInt`, `SubtractInt` - specialized integer operations (no type checking)
+- `IncrementLocal(index)`, `DecrementLocal(index)` - in-place local modification
+
+### Comparison operations
+
+- `Equal`, `NotEqual` - equality tests
+- `Less`, `LessEqual`, `Greater`, `GreaterEqual` - ordering comparisons
+- `LessInt` - specialized integer less-than (no type checking)
+
+### Logical operations
+
+- `And`, `Or` - short-circuit boolean operators
+- `Not` - boolean negation
+
+### Control flow
+
+- `Jump(target)` - unconditional jump to instruction
+- `JumpIfFalse(target)` - conditional jump
+- `Return` - return from function
+
+### Collections
+
+- `List(count)` - create list from top N stack values
+- `Dict(count)` - create dict from top 2N stack values (key-value pairs)
+- `Range` - create range from two stack values
+- `Index` - index into list/dict/string
+- `StoreIndex` - assign to indexed location (list[i] = x)
+
+### Loops and iteration
+
+- `GetIter` - convert value to iterator
+- `IterNext(exit_ip)` - get next value or jump to exit
+- `ForRangeInit(local_idx)` - initialize optimized range loop
+- `ForRangeNext(exit_ip, local_idx)` - increment and check range loop
+
+### Functions
+
+- `Call(arg_count)` - call function with N arguments
+- `TailCall(arg_count)` - tail-recursive call (reuses frame)
+- `CallMethod(arg_count)` - call method on object
+
+### Structs
+
+- `MakeStruct` - create struct instance from definition
+- `GetMethod` - retrieve method from struct definition
+
+### Stack manipulation
+
+- `Pop` - discard top of stack
+- `Pop2`, `Pop3` - discard multiple values
+- `Dup` - duplicate top of stack
+- `Swap` - swap top two values
+
+### Built-in functions
+
+- `Len` - get length of string/list/dict
+- `Str` - convert value to string
+- `Type` - get type name of value
+- `Print`, `Println` - output to console
+
+### Garbage collection
+
+- `Gc` - manually trigger garbage collection
+- `HeapStats` - get heap statistics as dict
+- `GcConfig` - configure GC thresholds
+
+### Module system
+
+- `Import` - load native module and return dict of functions
+
+## Specialized opcodes for performance
+
+The compiler emits specialized opcodes to reduce instruction size and eliminate runtime checks:
+
+### Zero-operand variants
+
+Instead of `LoadConst(0)` (12 bytes), emit `LoadConst0` (8 bytes). Similar optimizations exist for:
+
+- `LoadConst0`, `LoadConst1`
+- `LoadLocal0`, `LoadLocal1`, `LoadLocal2`, `LoadLocal3`
+- `LoadGlobal0`, `LoadGlobal1`, `LoadGlobal2`, `LoadGlobal3`
+
+### Type-specialized operations
+
+When types are known at compile time:
+
+- `AddInt` instead of `Add` - skips type checking
+- `SubtractInt` instead of `Subtract`
+- `LessInt` instead of `Less`
+
+### Loop optimizations
+
+Range-based for loops use optimized opcodes that avoid heap allocation:
+
+```walrus
+for i in 0..1000 {
+    sum = sum + i;
+}
+```
+
+Compiles to:
+
+```
+LoadConst(0)           // start
+LoadConst(1000)        // end
+ForRangeInit(0)        // store in locals[0] and locals[1]
+ForRangeNext(exit, 0)  // check and increment
+StoreAt(2)             // loop variable -> locals[2]
+// ... loop body ...
+Jump(header)           // back edge
+// exit:
+PopLocal(3)            // clean up range locals
+```
+
+This avoids creating an iterator object on the heap.
+
+## Disassembly
+
+Use the `-d` flag to disassemble bytecode:
+
+```bash
+walrus -d program.walrus
+```
+
+Example output:
+
+```
+=== Function: factorial (2 params) ===
+0000    LoadLocal0               // n
+0001    LoadConst(1)             // 1
+0002    LessEqual
+0003    JumpIfFalse(10)
+0004    LoadLocal1               // acc
+0005    Return
+0006    LoadGlobal0              // factorial
+0007    LoadLocal0               // n
+0008    LoadConst(1)             // 1
+0009    Subtract
+0010    LoadLocal0               // n
+0011    LoadLocal1               // acc
+0012    Multiply
+0013    TailCall(2)
+```
+
+The disassembler shows:
+
+- Instruction offset
+- Opcode and operands
+- Comments indicating what values are loaded
+
+## Constant pool
+
+Each instruction set has a constant pool storing:
+
+- Integer and float literals
+- String constants (as heap keys)
+- Compiled function objects
+- Struct definitions
+
+Constants are loaded with `LoadConst(index)` opcodes. The compiler deduplicates constants to reduce memory usage.
+
+## Instruction metadata
+
+Each instruction stores a `Span` for error reporting:
+
+```rust
+pub struct Span {
+    start: usize,  // Byte offset in source
+    end: usize,
+}
+```
+
+When runtime errors occur, the VM uses the span to show the exact source location:
+
+```
+Error: Type mismatch: expected int, got string
+  --> program.walrus:5:10
+   |
+ 5 |     let x = "hello" + 5;
+   |              ^^^^^^^^^^^
+```
+
+## Compact encoding
+
+The instruction set is designed for compactness:
+
+- Opcode enum uses `#[repr(u8)]` for 1-byte discriminant
+- Operands are `u32` instead of `usize` (4 bytes vs 8 bytes on 64-bit)
+- Zero-operand variants for common cases
+- Total instruction size: 12 bytes (down from 24 bytes in naive implementation)
+
+This improves instruction cache utilization and reduces memory footprint.
+
+## Source references
+
+- Opcode enum: `src/vm/opcode.rs:6`
+- Instruction struct: `src/vm/opcode.rs:122`
+- Disassembler: `src/vm/instruction_set.rs`
+- Opcode handlers: `src/vm/handlers/`

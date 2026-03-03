@@ -1,0 +1,921 @@
+---
+title: std/math module
+description: Mathematical functions, constants, and random number generation
+---
+
+The `std/math` module provides comprehensive mathematical functions including constants, arithmetic operations, trigonometry, logarithms, and random number generation.
+
+## Import
+
+```walrus
+import "std/math";
+```
+
+## Constants
+
+### pi
+
+Returns the mathematical constant π (pi).
+
+```walrus
+let value = math.pi();
+```
+
+<ResponseField name="return" type="float">
+  The value of π (approximately 3.14159...)
+</ResponseField>
+
+### e
+
+Returns Euler's number e.
+
+```walrus
+let value = math.e();
+```
+
+<ResponseField name="return" type="float">
+  The value of e (approximately 2.71828...)
+</ResponseField>
+
+### tau
+
+Returns τ (tau), equal to 2π.
+
+```walrus
+let value = math.tau();
+```
+
+<ResponseField name="return" type="float">
+  The value of τ (approximately 6.28318...)
+</ResponseField>
+
+### inf
+
+Returns positive infinity.
+
+```walrus
+let value = math.inf();
+```
+
+<ResponseField name="return" type="float">
+  Positive infinity
+</ResponseField>
+
+### nan
+
+Returns NaN (Not a Number).
+
+```walrus
+let value = math.nan();
+```
+
+<ResponseField name="return" type="float">
+  NaN value
+</ResponseField>
+
+## Basic arithmetic
+
+### abs
+
+Returns the absolute value of a number.
+
+```walrus
+let result = math.abs(x);
+```
+
+<ParamField path="x" type="int | float" required>
+  Number to get absolute value of
+</ParamField>
+
+<ResponseField name="return" type="int | float">
+  Absolute value of x (same type as input)
+</ResponseField>
+
+**Example:**
+
+```walrus
+import "std/math";
+
+println(math.abs(-42));    // 42
+println(math.abs(3.14));   // 3.14
+println(math.abs(-7.5));   // 7.5
+```
+
+### sign
+
+Returns the sign of a number as -1, 0, or 1.
+
+```walrus
+let result = math.sign(x);
+```
+
+<ParamField path="x" type="int | float" required>
+  Number to get the sign of
+</ParamField>
+
+<ResponseField name="return" type="int">
+  -1 if negative, 0 if zero, 1 if positive
+</ResponseField>
+
+**Example:**
+
+```walrus
+import "std/math";
+
+println(math.sign(-5));    // -1
+println(math.sign(0));     // 0
+println(math.sign(42));    // 1
+```
+
+### min
+
+Returns the smaller of two numbers.
+
+```walrus
+let result = math.min(a, b);
+```
+
+<ParamField path="a" type="int | float" required>
+  First number
+</ParamField>
+
+<ParamField path="b" type="int | float" required>
+  Second number
+</ParamField>
+
+<ResponseField name="return" type="int | float">
+  The smaller value
+</ResponseField>
+
+### max
+
+Returns the larger of two numbers.
+
+```walrus
+let result = math.max(a, b);
+```
+
+<ParamField path="a" type="int | float" required>
+  First number
+</ParamField>
+
+<ParamField path="b" type="int | float" required>
+  Second number
+</ParamField>
+
+<ResponseField name="return" type="int | float">
+  The larger value
+</ResponseField>
+
+### clamp
+
+Clamps a value to the range [lo, hi].
+
+```walrus
+let result = math.clamp(x, lo, hi);
+```
+
+<ParamField path="x" type="int | float" required>
+  Value to clamp
+</ParamField>
+
+<ParamField path="lo" type="int | float" required>
+  Lower bound (must be ≤ hi)
+</ParamField>
+
+<ParamField path="hi" type="int | float" required>
+  Upper bound (must be ≥ lo)
+</ParamField>
+
+<ResponseField name="return" type="int | float">
+  Value clamped to [lo, hi]
+</ResponseField>
+
+**Example:**
+
+```walrus
+import "std/math";
+
+println(math.clamp(5, 0, 10));   // 5
+println(math.clamp(-5, 0, 10));  // 0
+println(math.clamp(15, 0, 10));  // 10
+```
+
+## Rounding
+
+### floor
+
+Rounds down to the nearest integer.
+
+```walrus
+let result = math.floor(x);
+```
+
+<ParamField path="x" type="float" required>
+  Number to round down
+</ParamField>
+
+<ResponseField name="return" type="float">
+  Largest integer ≤ x
+</ResponseField>
+
+### ceil
+
+Rounds up to the nearest integer.
+
+```walrus
+let result = math.ceil(x);
+```
+
+<ParamField path="x" type="float" required>
+  Number to round up
+</ParamField>
+
+<ResponseField name="return" type="float">
+  Smallest integer ≥ x
+</ResponseField>
+
+### round
+
+Rounds to the nearest integer.
+
+```walrus
+let result = math.round(x);
+```
+
+<ParamField path="x" type="float" required>
+  Number to round
+</ParamField>
+
+<ResponseField name="return" type="float">
+  Nearest integer to x
+</ResponseField>
+
+### trunc
+
+Truncates the fractional part, returning just the integer portion.
+
+```walrus
+let result = math.trunc(x);
+```
+
+<ParamField path="x" type="float" required>
+  Number to truncate
+</ParamField>
+
+<ResponseField name="return" type="float">
+  Integer portion of x
+</ResponseField>
+
+### fract
+
+Returns the fractional part of a number.
+
+```walrus
+let result = math.fract(x);
+```
+
+<ParamField path="x" type="float" required>
+  Number to get fractional part of
+</ParamField>
+
+<ResponseField name="return" type="float">
+  Fractional portion of x (x - trunc(x))
+</ResponseField>
+
+**Example:**
+
+```walrus
+import "std/math";
+
+println(math.floor(3.7));   // 3.0
+println(math.ceil(3.2));    // 4.0
+println(math.round(3.5));   // 4.0
+println(math.trunc(3.7));   // 3.0
+println(math.fract(3.7));   // 0.7
+```
+
+## Powers and roots
+
+### sqrt
+
+Returns the square root of a number. The argument must be non-negative.
+
+```walrus
+let result = math.sqrt(x);
+```
+
+<ParamField path="x" type="float" required>
+  Number to take square root of (must be ≥ 0)
+</ParamField>
+
+<ResponseField name="return" type="float">
+  Square root of x
+</ResponseField>
+
+### cbrt
+
+Returns the cube root of a number.
+
+```walrus
+let result = math.cbrt(x);
+```
+
+<ParamField path="x" type="float" required>
+  Number to take cube root of
+</ParamField>
+
+<ResponseField name="return" type="float">
+  Cube root of x
+</ResponseField>
+
+### pow
+
+Raises x to the power of y.
+
+```walrus
+let result = math.pow(x, y);
+```
+
+<ParamField path="x" type="float" required>
+  Base
+</ParamField>
+
+<ParamField path="y" type="float" required>
+  Exponent
+</ParamField>
+
+<ResponseField name="return" type="float">
+  x raised to the power y
+</ResponseField>
+
+### hypot
+
+Returns the Euclidean norm: sqrt(x² + y²).
+
+```walrus
+let result = math.hypot(x, y);
+```
+
+<ParamField path="x" type="float" required>
+  First component
+</ParamField>
+
+<ParamField path="y" type="float" required>
+  Second component
+</ParamField>
+
+<ResponseField name="return" type="float">
+  Euclidean distance from origin
+</ResponseField>
+
+**Example:**
+
+```walrus
+import "std/math";
+
+println(math.sqrt(49));        // 7.0
+println(math.cbrt(27));        // 3.0
+println(math.pow(2, 10));      // 1024.0
+println(math.hypot(3, 4));     // 5.0
+```
+
+## Trigonometry
+
+All trigonometric functions use radians. Use `degrees()` and `radians()` to convert.
+
+### sin
+
+Returns the sine of an angle in radians.
+
+```walrus
+let result = math.sin(x);
+```
+
+<ParamField path="x" type="float" required>
+  Angle in radians
+</ParamField>
+
+<ResponseField name="return" type="float">
+  Sine of x
+</ResponseField>
+
+### cos
+
+Returns the cosine of an angle in radians.
+
+```walrus
+let result = math.cos(x);
+```
+
+<ParamField path="x" type="float" required>
+  Angle in radians
+</ParamField>
+
+<ResponseField name="return" type="float">
+  Cosine of x
+</ResponseField>
+
+### tan
+
+Returns the tangent of an angle in radians.
+
+```walrus
+let result = math.tan(x);
+```
+
+<ParamField path="x" type="float" required>
+  Angle in radians
+</ParamField>
+
+<ResponseField name="return" type="float">
+  Tangent of x
+</ResponseField>
+
+### asin
+
+Returns the inverse sine (arcsine) of a value. The argument must be in [-1, 1].
+
+```walrus
+let result = math.asin(x);
+```
+
+<ParamField path="x" type="float" required>
+  Value to take inverse sine of (must be in [-1, 1])
+</ParamField>
+
+<ResponseField name="return" type="float">
+  Angle in radians in the range [-π/2, π/2]
+</ResponseField>
+
+### acos
+
+Returns the inverse cosine (arccosine) of a value. The argument must be in [-1, 1].
+
+```walrus
+let result = math.acos(x);
+```
+
+<ParamField path="x" type="float" required>
+  Value to take inverse cosine of (must be in [-1, 1])
+</ParamField>
+
+<ResponseField name="return" type="float">
+  Angle in radians in the range [0, π]
+</ResponseField>
+
+### atan
+
+Returns the inverse tangent (arctangent) of a value.
+
+```walrus
+let result = math.atan(x);
+```
+
+<ParamField path="x" type="float" required>
+  Value to take inverse tangent of
+</ParamField>
+
+<ResponseField name="return" type="float">
+  Angle in radians in the range [-π/2, π/2]
+</ResponseField>
+
+### atan2
+
+Returns the quadrant-aware inverse tangent of y/x.
+
+```walrus
+let result = math.atan2(y, x);
+```
+
+<ParamField path="y" type="float" required>
+  Y coordinate
+</ParamField>
+
+<ParamField path="x" type="float" required>
+  X coordinate
+</ParamField>
+
+<ResponseField name="return" type="float">
+  Angle in radians in the range [-π, π]
+</ResponseField>
+
+**Example:**
+
+```walrus
+import "std/math";
+
+let angle = math.radians(45);
+println(math.sin(angle));  // 0.7071...
+println(math.cos(angle));  // 0.7071...
+println(math.tan(angle));  // 1.0
+```
+
+## Exponentials and logarithms
+
+### exp
+
+Returns e raised to the power x.
+
+```walrus
+let result = math.exp(x);
+```
+
+<ParamField path="x" type="float" required>
+  Exponent
+</ParamField>
+
+<ResponseField name="return" type="float">
+  e^x
+</ResponseField>
+
+### ln
+
+Returns the natural logarithm (base e) of x. Requires x > 0.
+
+```walrus
+let result = math.ln(x);
+```
+
+<ParamField path="x" type="float" required>
+  Number to take natural log of (must be > 0)
+</ParamField>
+
+<ResponseField name="return" type="float">
+  Natural logarithm of x
+</ResponseField>
+
+### log2
+
+Returns the base-2 logarithm of x. Requires x > 0.
+
+```walrus
+let result = math.log2(x);
+```
+
+<ParamField path="x" type="float" required>
+  Number to take log base 2 of (must be > 0)
+</ParamField>
+
+<ResponseField name="return" type="float">
+  Base-2 logarithm of x
+</ResponseField>
+
+### log10
+
+Returns the base-10 logarithm of x. Requires x > 0.
+
+```walrus
+let result = math.log10(x);
+```
+
+<ParamField path="x" type="float" required>
+  Number to take log base 10 of (must be > 0)
+</ParamField>
+
+<ResponseField name="return" type="float">
+  Base-10 logarithm of x
+</ResponseField>
+
+### log
+
+Returns the logarithm of x in a custom base. Requires x > 0, base > 0, and base ≠ 1.
+
+```walrus
+let result = math.log(x, base);
+```
+
+<ParamField path="x" type="float" required>
+  Number to take logarithm of (must be > 0)
+</ParamField>
+
+<ParamField path="base" type="float" required>
+  Logarithm base (must be > 0 and ≠ 1)
+</ParamField>
+
+<ResponseField name="return" type="float">
+  Logarithm of x in the specified base
+</ResponseField>
+
+**Example:**
+
+```walrus
+import "std/math";
+
+println(math.exp(1));       // 2.71828... (e)
+println(math.ln(math.e())); // 1.0
+println(math.log2(1024));   // 10.0
+println(math.log10(1000));  // 3.0
+println(math.log(8, 2));    // 3.0
+```
+
+## Interpolation and conversion
+
+### lerp
+
+Linear interpolation between two values.
+
+```walrus
+let result = math.lerp(a, b, t);
+```
+
+<ParamField path="a" type="float" required>
+  Start value
+</ParamField>
+
+<ParamField path="b" type="float" required>
+  End value
+</ParamField>
+
+<ParamField path="t" type="float" required>
+  Interpolation factor (0 = a, 1 = b)
+</ParamField>
+
+<ResponseField name="return" type="float">
+  Interpolated value: a + (b - a) * t
+</ResponseField>
+
+**Example:**
+
+```walrus
+import "std/math";
+
+println(math.lerp(10, 20, 0.0));   // 10.0
+println(math.lerp(10, 20, 0.5));   // 15.0
+println(math.lerp(10, 20, 1.0));   // 20.0
+println(math.lerp(10, 20, 0.25));  // 12.5
+```
+
+### degrees
+
+Converts radians to degrees.
+
+```walrus
+let result = math.degrees(r);
+```
+
+<ParamField path="r" type="float" required>
+  Angle in radians
+</ParamField>
+
+<ResponseField name="return" type="float">
+  Angle in degrees
+</ResponseField>
+
+### radians
+
+Converts degrees to radians.
+
+```walrus
+let result = math.radians(d);
+```
+
+<ParamField path="d" type="float" required>
+  Angle in degrees
+</ParamField>
+
+<ResponseField name="return" type="float">
+  Angle in radians
+</ResponseField>
+
+**Example:**
+
+```walrus
+import "std/math";
+
+let rad = math.radians(180);
+println(rad);  // 3.14159... (π)
+
+let deg = math.degrees(math.pi());
+println(deg);  // 180.0
+```
+
+## Validation
+
+### is_finite
+
+Returns true if the value is finite (not infinity or NaN).
+
+```walrus
+let result = math.is_finite(x);
+```
+
+<ParamField path="x" type="float" required>
+  Value to check
+</ParamField>
+
+<ResponseField name="return" type="bool">
+  true if x is finite, false otherwise
+</ResponseField>
+
+### is_nan
+
+Returns true if the value is NaN (Not a Number).
+
+```walrus
+let result = math.is_nan(x);
+```
+
+<ParamField path="x" type="float" required>
+  Value to check
+</ParamField>
+
+<ResponseField name="return" type="bool">
+  true if x is NaN, false otherwise
+</ResponseField>
+
+### is_inf
+
+Returns true if the value is infinite (positive or negative).
+
+```walrus
+let result = math.is_inf(x);
+```
+
+<ParamField path="x" type="float" required>
+  Value to check
+</ParamField>
+
+<ResponseField name="return" type="bool">
+  true if x is infinite, false otherwise
+</ResponseField>
+
+**Example:**
+
+```walrus
+import "std/math";
+
+println(math.is_finite(42.0));      // true
+println(math.is_finite(math.inf())); // false
+println(math.is_nan(math.nan()));    // true
+println(math.is_inf(math.inf()));    // true
+```
+
+## Random number generation
+
+### seed
+
+Seeds the random number generator for deterministic random sequences.
+
+```walrus
+math.seed(n);
+```
+
+<ParamField path="n" type="int" required>
+  Seed value for the RNG
+</ParamField>
+
+<ResponseField name="return" type="void">
+  No return value
+</ResponseField>
+
+### rand_float
+
+Returns a random float in the range [0.0, 1.0).
+
+```walrus
+let value = math.rand_float();
+```
+
+<ResponseField name="return" type="float">
+  Random float in [0.0, 1.0)
+</ResponseField>
+
+### rand_bool
+
+Returns a random boolean value (50/50 chance).
+
+```walrus
+let value = math.rand_bool();
+```
+
+<ResponseField name="return" type="bool">
+  Random true or false
+</ResponseField>
+
+### rand_int
+
+Returns a random integer in the range [a, b] (inclusive on both ends).
+
+```walrus
+let value = math.rand_int(a, b);
+```
+
+<ParamField path="a" type="int" required>
+  Minimum value (inclusive)
+</ParamField>
+
+<ParamField path="b" type="int" required>
+  Maximum value (inclusive, must be ≥ a)
+</ParamField>
+
+<ResponseField name="return" type="int">
+  Random integer in [a, b]
+</ResponseField>
+
+### rand_range
+
+Returns a random float in the range [a, b).
+
+```walrus
+let value = math.rand_range(a, b);
+```
+
+<ParamField path="a" type="float" required>
+  Minimum value (inclusive)
+</ParamField>
+
+<ParamField path="b" type="float" required>
+  Maximum value (exclusive, must be > a)
+</ParamField>
+
+<ResponseField name="return" type="float">
+  Random float in [a, b)
+</ResponseField>
+
+**Example:**
+
+```walrus
+import "std/math";
+
+// Deterministic random with seed
+math.seed(1337);
+let id = math.rand_int(1000, 9999);
+println(f"ID: {id}");
+
+// Random operations
+println(math.rand_bool());           // true or false
+println(math.rand_float());          // 0.0 to 1.0
+println(math.rand_int(1, 6));        // Dice roll: 1-6
+println(math.rand_range(0.0, 100.0)); // 0.0 to 100.0
+```
+
+## Usage patterns
+
+### Circle calculations
+
+```walrus
+import "std/math";
+
+let radius = 5.0;
+let circumference = 2.0 * math.pi() * radius;
+let area = math.pi() * math.pow(radius, 2);
+
+println(f"Radius: {radius}");
+println(f"Circumference: {circumference}");
+println(f"Area: {area}");
+```
+
+### Distance calculation
+
+```walrus
+import "std/math";
+
+let x1 = 0.0;
+let y1 = 0.0;
+let x2 = 3.0;
+let y2 = 4.0;
+
+let distance = math.hypot(x2 - x1, y2 - y1);
+println(f"Distance: {distance}");  // 5.0
+```
+
+### Random game mechanics
+
+```walrus
+import "std/math";
+
+math.seed(42);  // Reproducible gameplay
+
+// Dice roll
+let roll = math.rand_int(1, 6);
+println(f"You rolled a {roll}");
+
+// Random chance
+if math.rand_bool() {
+    println("Critical hit!");
+}
+
+// Damage with variance
+let base_damage = 100;
+let variance = math.rand_range(-10.0, 10.0);
+let damage = base_damage + variance;
+println(f"Damage: {damage}");
+```
+
+### Angle calculations
+
+```walrus
+import "std/math";
+
+// Convert 45 degrees to radians
+let angle_deg = 45.0;
+let angle_rad = math.radians(angle_deg);
+
+println(f"Sin(45°) = {math.sin(angle_rad)}");
+println(f"Cos(45°) = {math.cos(angle_rad)}");
+
+// Convert back
+let back_to_degrees = math.degrees(angle_rad);
+println(f"Back to degrees: {back_to_degrees}");
+```

@@ -1,0 +1,419 @@
+---
+title: Operators
+description: Master arithmetic, comparison, logical, and other operators in Walrus
+---
+
+Walrus provides a comprehensive set of operators for arithmetic, comparison, logical operations, and more. This guide covers all available operators and their usage.
+
+## Arithmetic operators
+
+### Basic arithmetic
+
+```walrus
+// Addition
+println(2 + 3);        // 5
+println(10.5 + 2.5);   // 13.0
+
+// Subtraction
+println(10 - 4);       // 6
+println(5.5 - 2.3);    // 3.2
+
+// Multiplication
+println(7 * 8);        // 56
+println(2.5 * 4);      // 10.0
+
+// Division
+println(20 / 4);       // 5
+println(7 / 2);        // 3 (integer division)
+println(7 / 2.0);      // 3.5 (float division)
+
+// Modulo (remainder)
+println(17 % 5);       // 2
+println(10 % 3);       // 1
+```
+
+### Exponentiation
+
+Use `**` for power operations:
+
+```walrus
+println(2 ** 10);      // 1024
+println(5 ** 2);       // 25
+println(2 ** 0.5);     // 1.414... (square root)
+println(27 ** (1/3));  // 3 (cube root, approximation)
+```
+
+### Operator precedence
+
+Walrus follows standard mathematical precedence:
+
+```walrus
+println(2 + 3 * 4);       // 14 (not 20)
+println((2 + 3) * 4);     // 20 (use parentheses)
+println(10 - 2 + 3);      // 11 (left to right)
+println(2 ** 3 ** 2);     // 512 (right to left)
+```
+
+<Note>
+Precedence from highest to lowest:
+1. `**` (exponentiation, right-associative)
+2. `*`, `/`, `%` (multiplication, division, modulo)
+3. `+`, `-` (addition, subtraction)
+</Note>
+
+## Comparison operators
+
+Comparison operators return boolean values:
+
+```walrus
+// Equality
+println(5 == 5);       // true
+println(5 == 6);       // false
+println("abc" == "abc");  // true
+
+// Inequality
+println(5 != 5);       // false
+println(5 != 6);       // true
+
+// Greater than
+println(10 > 5);       // true
+println(5 > 10);       // false
+
+// Less than
+println(5 < 10);       // true
+println(10 < 5);       // false
+
+// Greater than or equal
+println(10 >= 10);     // true
+println(10 >= 5);      // true
+println(5 >= 10);      // false
+
+// Less than or equal
+println(10 <= 10);     // true
+println(5 <= 10);      // true
+println(10 <= 5);      // false
+```
+
+### Comparing different types
+
+```walrus
+// Strings
+println("apple" < "banana");   // true (lexicographic)
+println("zebra" > "aardvark"); // true
+
+// Booleans
+println(true == true);         // true
+println(false != true);        // true
+
+// Collections
+println([1, 2] == [1, 2]);     // true
+println([1, 2] == [2, 1]);     // false
+```
+
+## Logical operators
+
+### Boolean logic
+
+```walrus
+// AND operator
+println(true and true);     // true
+println(true and false);    // false
+println(false and false);   // false
+
+// OR operator
+println(true or true);      // true
+println(true or false);     // true
+println(false or false);    // false
+
+// NOT operator
+println(not true);          // false
+println(not false);         // true
+```
+
+### Short-circuit evaluation
+
+Walrus uses short-circuit evaluation for `and` and `or`:
+
+```walrus
+fn expensive_check : {
+    println("This is expensive!");
+    return true;
+}
+
+// AND short-circuits if first operand is false
+let result1 = false and expensive_check();
+// "This is expensive!" is NOT printed
+
+// OR short-circuits if first operand is true
+let result2 = true or expensive_check();
+// "This is expensive!" is NOT printed
+```
+
+<Note>
+Short-circuit evaluation can improve performance by avoiding unnecessary evaluations.
+</Note>
+
+### Combining logical operators
+
+```walrus
+let age = 25;
+let has_license = true;
+let has_insurance = true;
+
+let can_drive = age >= 16 and has_license and has_insurance;
+println(can_drive);  // true
+
+let is_valid = (age > 18 and has_license) or (age > 21);
+println(is_valid);   // true
+```
+
+## Compound assignment operators
+
+Combine arithmetic operations with assignment:
+
+```walrus
+let x = 10;
+
+x += 5;    // x = x + 5  -> 15
+x -= 3;    // x = x - 3  -> 12
+x *= 2;    // x = x * 2  -> 24
+x /= 4;    // x = x / 4  -> 6
+x %= 4;    // x = x % 4  -> 2
+
+println(x);  // 2
+```
+
+### With strings
+
+```walrus
+let message = "Hello";
+message += " World";
+message += "!";
+println(message);  // Hello World!
+```
+
+### With collections
+
+```walrus
+let numbers = [1, 2, 3];
+numbers += [4, 5];
+println(numbers);  // [1, 2, 3, 4, 5]
+
+let config = {"debug": true};
+config += {"port": 8080};
+println(config);  // {"debug": true, "port": 8080}
+```
+
+## String concatenation
+
+Use `+` to concatenate strings:
+
+```walrus
+let first = "Hello";
+let second = "World";
+let greeting = first + " " + second;
+println(greeting);  // Hello World
+
+// Concatenating with numbers (requires conversion)
+let count = 42;
+let message = "Count: " + str(count);
+println(message);  // Count: 42
+```
+
+## Collection concatenation
+
+### Lists
+
+```walrus
+let a = [1, 2, 3];
+let b = [4, 5, 6];
+let combined = a + b;
+println(combined);  // [1, 2, 3, 4, 5, 6]
+```
+
+### Dictionaries
+
+```walrus
+let defaults = {"theme": "dark", "size": "medium"};
+let custom = {"size": "large", "color": "blue"};
+let config = defaults + custom;
+println(config);  // {"theme": "dark", "size": "large", "color": "blue"}
+```
+
+<Note>
+When merging dictionaries, values from the right operand override those from the left.
+</Note>
+
+## Unary operators
+
+### Negation
+
+```walrus
+// Arithmetic negation
+let x = 10;
+println(-x);      // -10
+println(-(-x));   // 10
+
+let y = -5;
+println(-y);      // 5
+```
+
+### Logical NOT
+
+```walrus
+let is_valid = true;
+println(not is_valid);  // false
+
+let is_empty = false;
+println(not is_empty);  // true
+```
+
+## Operator precedence table
+
+From highest to lowest precedence:
+
+| Precedence | Operators | Description | Associativity |
+|------------|-----------|-------------|---------------|
+| 1 | `**` | Exponentiation | Right |
+| 2 | `-` (unary), `not` | Negation, logical NOT | Right |
+| 3 | `*`, `/`, `%` | Multiplication, division, modulo | Left |
+| 4 | `+`, `-` | Addition, subtraction | Left |
+| 5 | `<`, `<=`, `>`, `>=` | Comparison | Left |
+| 6 | `==`, `!=` | Equality | Left |
+| 7 | `and` | Logical AND | Left |
+| 8 | `or` | Logical OR | Left |
+
+## Practical examples
+
+### Calculating grades
+
+```walrus
+let score = 85;
+let attendance = 0.90;  // 90%
+
+let final_score = score * 0.7 + attendance * 100 * 0.3;
+println(f"Final score: {final_score}");  // Final score: 86.5
+
+let passed = final_score >= 60 and attendance >= 0.75;
+println(f"Passed: {passed}");  // Passed: true
+```
+
+### Range validation
+
+```walrus
+let value = 42;
+let min = 0;
+let max = 100;
+
+let in_range = value >= min and value <= max;
+println(f"In range: {in_range}");  // In range: true
+```
+
+### FizzBuzz logic
+
+```walrus
+for n in 1..21 {
+    let result = "";
+    
+    if n % 3 == 0 {
+        result += "Fizz";
+    }
+    
+    if n % 5 == 0 {
+        result += "Buzz";
+    }
+    
+    if result == "" {
+        result = str(n);
+    }
+    
+    println(result);
+}
+```
+
+### Complex conditions
+
+```walrus
+fn can_vote : age, is_citizen, is_registered {
+    return age >= 18 and is_citizen and is_registered;
+}
+
+let eligible = can_vote(25, true, true);
+println(f"Can vote: {eligible}");  // Can vote: true
+```
+
+### Distance calculation
+
+```walrus
+fn distance : x1, y1, x2, y2 {
+    let dx = x2 - x1;
+    let dy = y2 - y1;
+    return (dx ** 2 + dy ** 2) ** 0.5;
+}
+
+let d = distance(0, 0, 3, 4);
+println(f"Distance: {d}");  // Distance: 5.0
+```
+
+## Best practices
+
+<AccordionGroup>
+  <Accordion title="Use parentheses for clarity">
+    Even when not strictly necessary, parentheses improve readability:
+    
+    ```walrus
+    // Works but less clear
+    let result = a + b * c - d / e;
+    
+    // Better
+    let result = a + (b * c) - (d / e);
+    ```
+  </Accordion>
+  
+  <Accordion title="Avoid complex compound conditions">
+    Break complex conditions into intermediate variables:
+    
+    ```walrus
+    // Hard to read
+    if age >= 18 and (has_license or has_permit) and (has_insurance or has_waiver) and not is_suspended {
+        // ...
+    }
+    
+    // Better
+    let is_adult = age >= 18;
+    let can_operate = has_license or has_permit;
+    let is_covered = has_insurance or has_waiver;
+    let is_allowed = is_adult and can_operate and is_covered and not is_suspended;
+    
+    if is_allowed {
+        // ...
+    }
+    ```
+  </Accordion>
+  
+  <Accordion title="Use appropriate comparison operators">
+    Choose the right operator for your comparison:
+    
+    ```walrus
+    // For equality
+    if count == 0 { }  // Good
+    if not count { }   // Unclear for zero check
+    
+    // For ranges
+    if 0 <= value and value <= 100 { }  // Good
+    if value >= 0 and value <= 100 { }  // Also clear
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Control flow" icon="code-branch" href="/language/control-flow">
+    Learn about if/else, loops, and control structures
+  </Card>
+  
+  <Card title="Functions" icon="function" href="/language/functions">
+    Explore function definitions and functional programming
+  </Card>
+</CardGroup>

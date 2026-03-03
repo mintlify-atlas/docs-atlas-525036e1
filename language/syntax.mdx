@@ -1,0 +1,263 @@
+---
+title: Basic syntax
+description: Learn the fundamental syntax rules and commenting styles in Walrus
+---
+
+Walrus features a clean, expressive syntax that's easy to read and write. This guide covers the basic syntax rules and commenting conventions.
+
+## Comments
+
+Walrus supports both single-line and multi-line comments to help you document your code.
+
+### Single-line comments
+
+Use `//` for single-line comments:
+
+```walrus
+// This is a single-line comment
+let x = 42; // Comments can appear after code
+```
+
+### Multi-line comments
+
+Use `/* */` for multi-line comments that can span multiple lines:
+
+```walrus
+/* This is a multi-line comment
+   that can span multiple lines */
+
+let name = "Walrus";
+
+/* Multi-line comments can also be inline */ let y = 84;
+```
+
+<Note>
+Multi-line comments are useful for longer explanations or temporarily disabling blocks of code during development.
+</Note>
+
+## Statements and expressions
+
+Walrus distinguishes between statements and expressions:
+
+- **Statements** perform actions (like variable declarations, assignments, function definitions)
+- **Expressions** evaluate to values (like arithmetic operations, function calls, literals)
+
+### Statements
+
+```walrus
+let x = 10;           // Variable declaration
+x = x + 5;            // Assignment
+println("Hello");     // Function call statement
+```
+
+### Expressions
+
+```walrus
+2 + 3 * 4             // Arithmetic expression
+len([1, 2, 3])        // Function call expression
+x > 5 and y < 10      // Boolean expression
+```
+
+## Semicolons
+
+Walrus does not require semicolons at the end of statements. Each statement is typically on its own line:
+
+```walrus
+let name = "Alice"
+let age = 30
+println(f"Hello, {name}!")
+```
+
+## Whitespace and indentation
+
+While Walrus doesn't enforce strict indentation rules like Python, proper indentation improves code readability, especially in control structures:
+
+<CodeGroup>
+
+```walrus Good indentation
+if score >= 90 {
+    println("Excellent!");
+} else if score >= 70 {
+    println("Good job!");
+} else {
+    println("Keep practicing!");
+}
+```
+
+```walrus Works but harder to read
+if score >= 90 {
+println("Excellent!");
+} else if score >= 70 {
+println("Good job!");
+} else {
+println("Keep practicing!");
+}
+```
+
+</CodeGroup>
+
+## Code blocks
+
+Code blocks are delimited by curly braces `{` and `}`:
+
+```walrus
+if condition {
+    // Code block for if
+    let temp = x * 2;
+    println(temp);
+}
+
+fn calculate : a, b {
+    // Function body is a code block
+    let result = a + b;
+    return result;
+}
+```
+
+## Identifiers
+
+Identifiers (variable names, function names, etc.) must follow these rules:
+
+- Start with a letter (a-z, A-Z) or underscore (`_`)
+- Can contain letters, digits (0-9), and underscores
+- Case-sensitive (`myVar` and `myvar` are different)
+
+### Valid identifiers
+
+```walrus
+let count = 0;
+let user_name = "Alice";
+let _private = 42;
+let value123 = true;
+```
+
+### Invalid identifiers
+
+```walrus
+let 123value = 10;    // Cannot start with a digit
+let my-var = 5;       // Hyphens not allowed
+let my var = 5;       // Spaces not allowed
+```
+
+## Reserved keywords
+
+The following words are reserved and cannot be used as identifiers:
+
+<CardGroup cols={3}>
+  <Card title="Control flow">
+    - `if`
+    - `else`
+    - `while`
+    - `for`
+    - `in`
+    - `break`
+    - `continue`
+  </Card>
+  
+  <Card title="Declarations">
+    - `fn`
+    - `let`
+    - `struct`
+    - `return`
+    - `import`
+    - `as`
+  </Card>
+  
+  <Card title="Literals & operators">
+    - `true`
+    - `false`
+    - `void`
+    - `and`
+    - `or`
+    - `not`
+  </Card>
+</CardGroup>
+
+## Print functions
+
+Walrus provides two built-in functions for output:
+
+### println
+
+Prints a value followed by a newline:
+
+```walrus
+println("Hello, World!");
+println(42);
+println([1, 2, 3]);
+```
+
+### print
+
+Prints a value without a newline:
+
+```walrus
+print("Count: ");
+for i in 0..5 {
+    print(str(i) + " ");
+}
+println("");  // Add newline at the end
+```
+
+<Note>
+Both `print` and `println` automatically convert values to strings for display.
+</Note>
+
+## Best practices
+
+<AccordionGroup>
+  <Accordion title="Use meaningful variable names">
+    Choose descriptive names that explain the purpose of the variable:
+    
+    ```walrus
+    // Good
+    let user_count = 10;
+    let total_price = 99.99;
+    
+    // Avoid
+    let x = 10;
+    let tmp = 99.99;
+    ```
+  </Accordion>
+  
+  <Accordion title="Comment complex logic">
+    Add comments to explain why you're doing something, not what you're doing:
+    
+    ```walrus
+    // Calculate discount based on loyalty tier
+    // Gold members get 20%, Silver get 10%
+    let discount = 0;
+    if tier == "gold" {
+        discount = 0.20;
+    } else if tier == "silver" {
+        discount = 0.10;
+    }
+    ```
+  </Accordion>
+  
+  <Accordion title="Keep lines reasonably short">
+    Break long expressions into multiple lines for better readability:
+    
+    ```walrus
+    // Good
+    let total = base_price + 
+                shipping_cost + 
+                tax_amount;
+    
+    // Less readable
+    let total = base_price + shipping_cost + tax_amount + insurance_fee + handling_charge;
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Data types" icon="database" href="/language/types">
+    Explore Walrus data types including integers, floats, strings, and collections
+  </Card>
+  
+  <Card title="Variables" icon="box" href="/language/variables">
+    Learn how to declare and work with variables
+  </Card>
+</CardGroup>

@@ -1,0 +1,197 @@
+---
+title: Benchmarking
+description: Performance benchmarks comparing Walrus against Python across various computational patterns
+---
+
+## Benchmark suite
+
+The `benchmarks/` directory contains a comprehensive benchmark suite comparing Python and Walrus performance across various computational patterns.
+
+## Running benchmarks
+
+### Run all benchmarks
+
+<Steps>
+  <Step title="Navigate to benchmarks directory">
+    ```bash
+    cd benchmarks
+    ```
+  </Step>
+
+  <Step title="Execute the benchmark script">
+    The script will automatically build Walrus in release mode if needed:
+
+    ```bash
+    ./run_benchmarks.sh
+    ```
+  </Step>
+
+  <Step title="Review results">
+    The script outputs timing comparisons for each benchmark, showing which language is faster and by what factor.
+  </Step>
+</Steps>
+
+### Run individual benchmarks
+
+You can run specific benchmarks separately:
+
+<CodeGroup>
+```bash Python
+python3 benchmarks/01_quicksort.py
+```
+
+```bash Walrus (from project root)
+cargo run --release -- benchmarks/01_quicksort.walrus
+```
+
+```bash Using built binary
+./target/release/walrus benchmarks/01_quicksort.walrus
+```
+</CodeGroup>
+
+## Benchmark categories
+
+### Sorting algorithms
+
+| Benchmark | Description | Scale |
+| --- | --- | --- |
+| `01_quicksort` | Quicksort algorithm | 5,000 elements |
+| `02_bubble_sort` | O(n²) bubble sort | 1,000 elements |
+
+### Recursion tests
+
+| Benchmark | Description | Scale |
+| --- | --- | --- |
+| `03_fibonacci_recursive` | Naive recursive Fibonacci | fib(30) - exponential time |
+| `04_fibonacci_iterative` | Iterative Fibonacci | 100,000 iterations |
+| `13_factorial` | Recursive factorial | factorial(12) - 100k calls |
+| `15_ackermann` | Ackermann function | A(3,7) - extreme recursion |
+
+### Memory and GC stress
+
+| Benchmark | Description | Scale |
+| --- | --- | --- |
+| `05_gc_stress` | Object allocation/deallocation | 50,000 temporary objects |
+| `06_gc_linked_structures` | Linked list creation | 1,000 lists × depth 100 |
+| `16_tree_traversal` | Binary tree operations | depth 15 |
+
+### Iteration performance
+
+| Benchmark | Description | Scale |
+| --- | --- | --- |
+| `07_iteration_heavy` | Simple counting loop | 1,000,000 iterations |
+| `08_nested_loops` | Triple nested loops | 100³ = 1M iterations |
+| `17_while_loop` | While loop counting | 1,000,000 iterations |
+
+### Data structures
+
+| Benchmark | Description | Scale |
+| --- | --- | --- |
+| `09_list_operations` | List append, access, iteration | 10,000 elements |
+| `10_dict_operations` | Dictionary insert and lookup | 10,000 entries |
+| `11_string_concat` | String concatenation | 10,000 characters |
+
+### Algorithms
+
+| Benchmark | Description | Scale |
+| --- | --- | --- |
+| `12_prime_sieve` | Sieve of Eratosthenes | up to 50,000 |
+| `14_matrix_multiply` | Matrix multiplication | 50×50 matrices |
+
+### Language features
+
+| Benchmark | Description | Scale |
+| --- | --- | --- |
+| `18_closure_stress` | Function call overhead | 50,000 calls |
+| `19_arithmetic_heavy` | Heavy arithmetic operations | 1,000,000 iterations |
+| `20_method_dispatch` | Struct/class method calls | 100,000 iterations |
+
+## Interpreting results
+
+<Check>Lower execution times are better</Check>
+
+The benchmark script displays:
+- Execution time for each language
+- Comparative speedup factor
+- Color-coded results (green for Walrus wins, red for Python wins)
+
+**Sample output:**
+
+```
+==========================================
+Benchmark: 01_quicksort
+==========================================
+
+--- Python ---
+Time: 0.45s
+
+--- Walrus ---
+Time: 0.32s
+
+Walrus is 0.71x faster
+```
+
+## Factors affecting results
+
+<Warning>
+Performance results may vary based on several factors:
+</Warning>
+
+- **Python version** - Python 3.11+ includes JIT optimizations that significantly improve performance
+- **System hardware** - CPU, RAM, and system load affect benchmarks
+- **Compilation options** - Ensure Walrus is built with `--release` flag
+- **Startup time** - Both interpreters include initialization overhead
+- **Compilation time** - Walrus parsing and bytecode generation is included
+
+## JIT benchmark comparison
+
+For JIT-enabled builds, you can compare interpreter vs JIT performance:
+
+```bash
+# Build with JIT support
+cargo build --release --features jit
+
+# Run without JIT
+./target/release/walrus benchmarks/07_iteration_heavy.walrus
+
+# Run with JIT enabled
+./target/release/walrus benchmarks/07_iteration_heavy.walrus --jit
+
+# Show JIT statistics
+./target/release/walrus benchmarks/07_iteration_heavy.walrus --jit --jit-stats
+```
+
+**Expected JIT speedup (hot loops):**
+
+| Pattern | Interpreter | JIT | Speedup |
+| --- | --- | --- | --- |
+| 10K iterations × sum(0..1000) | 0.68s | 0.01s | ~68× |
+
+## Notes on fairness
+
+- Both languages run equivalent algorithms for fair comparison
+- Syntax differences are minimal (e.g., `0..n` vs `range(n)`)
+- Memory usage is not directly measured, only GC stress patterns
+- Python startup time and Walrus compilation time are both included
+
+## Syntax differences
+
+| Feature | Python | Walrus |
+| --- | --- | --- |
+| Range loop | `for i in range(n):` | `for i in 0..n {` |
+| Function def | `def foo(x):` | `fn foo : x {` |
+| None/null | `None` | `void` |
+| Print | `print(x)` | `println(x)` |
+| F-string | `f"x={x}"` | `f"x={x}"` |
+
+## Contributing benchmarks
+
+When adding new benchmarks:
+
+1. Create both `.walrus` and `.py` files with the same basename
+2. Ensure algorithms are equivalent
+3. Include appropriate scale for meaningful timing
+4. Add descriptions to the benchmark README
+5. Test that both implementations produce correct results
+
+See [Contributing](/development/contributing) for more details.

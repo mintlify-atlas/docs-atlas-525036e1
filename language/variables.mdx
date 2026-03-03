@@ -1,0 +1,447 @@
+---
+title: Variables
+description: Learn how to declare, assign, and work with variables in Walrus
+---
+
+Variables in Walrus are dynamically typed and can hold any value type. This guide covers variable declaration, assignment, and scoping rules.
+
+## Variable declaration
+
+Use the `let` keyword to declare variables:
+
+```walrus
+let name = "Alice";
+let age = 30;
+let is_active = true;
+let items = [1, 2, 3];
+```
+
+<Note>
+Variable declarations with `let` create a new variable in the current scope.
+</Note>
+
+## Assignment
+
+Once declared, you can reassign variables to new values:
+
+```walrus
+let x = 10;
+println(x);  // 10
+
+x = 20;
+println(x);  // 20
+
+// Can change types
+x = "now a string";
+println(x);  // now a string
+```
+
+### Multiple assignments
+
+```walrus
+let a = 5;
+let b = 10;
+let c = 15;
+
+println(a);  // 5
+println(b);  // 10
+println(c);  // 15
+```
+
+## Dynamic typing
+
+Walrus is dynamically typed, meaning variables can hold values of any type and can change types:
+
+```walrus
+let value = 42;              // Integer
+println(type(value));        // int
+
+value = 3.14;                // Now a float
+println(type(value));        // float
+
+value = "text";              // Now a string
+println(type(value));        // string
+
+value = [1, 2, 3];           // Now a list
+println(type(value));        // list
+```
+
+## Variable scope
+
+### Local scope
+
+Variables declared inside a block are local to that block:
+
+```walrus
+let x = 10;  // Global scope
+
+if true {
+    let y = 20;  // Local to if block
+    println(x);  // 10 (can access global)
+    println(y);  // 20
+}
+
+println(x);  // 10
+println(y);  // Error: y not defined in this scope
+```
+
+### Function scope
+
+Function parameters and variables declared in functions are local to that function:
+
+```walrus
+let global_var = "global";
+
+fn example : param {
+    let local_var = "local";
+    println(param);       // Accessible
+    println(local_var);   // Accessible
+    println(global_var);  // Can access global
+}
+
+example("test");
+println(local_var);  // Error: not defined
+```
+
+### Shadowing
+
+Inner scopes can shadow outer variables:
+
+```walrus
+let x = 10;
+println(x);  // 10
+
+if true {
+    let x = 20;  // Shadows outer x
+    println(x);  // 20
+}
+
+println(x);  // 10 (outer x unchanged)
+```
+
+## Global variables
+
+Variables declared at the top level are global and accessible from anywhere:
+
+```walrus
+let global_count = 0;
+
+fn increment : {
+    global_count = global_count + 1;
+}
+
+increment();
+increment();
+println(global_count);  // 2
+```
+
+<Warning>
+Modifying global variables from functions can make code harder to understand. Consider using function parameters and return values instead.
+</Warning>
+
+## Compound assignment
+
+Walrus supports compound assignment operators:
+
+### Arithmetic compound assignment
+
+```walrus
+let x = 10;
+
+x += 5;   // Same as: x = x + 5
+println(x);  // 15
+
+x -= 3;   // Same as: x = x - 3
+println(x);  // 12
+
+x *= 2;   // Same as: x = x * 2
+println(x);  // 24
+
+x /= 4;   // Same as: x = x / 4
+println(x);  // 6
+
+x %= 4;   // Same as: x = x % 4
+println(x);  // 2
+```
+
+### String concatenation
+
+```walrus
+let message = "Hello";
+message += " World";
+println(message);  // Hello World
+```
+
+### Collection compound assignment
+
+```walrus
+// Lists
+let nums = [1, 2, 3];
+nums += [4, 5];
+println(nums);  // [1, 2, 3, 4, 5]
+
+// Dictionaries
+let config = {"debug": true};
+config += {"port": 8080};
+println(config);  // {"debug": true, "port": 8080}
+```
+
+## Working with collections
+
+### List element assignment
+
+Modify list elements by index:
+
+```walrus
+let numbers = [10, 20, 30, 40];
+
+numbers[0] = 15;    // Update first element
+numbers[-1] = 45;   // Update last element
+
+println(numbers);   // [15, 20, 30, 45]
+```
+
+### Dictionary entry assignment
+
+Add or update dictionary entries:
+
+```walrus
+let person = {"name": "Alice"};
+
+person["age"] = 30;           // Add new entry
+person["name"] = "Bob";       // Update existing entry
+
+println(person);  // {"name": "Bob", "age": 30}
+```
+
+### Nested structure assignment
+
+```walrus
+let data = {
+    "users": [
+        {"name": "Alice", "score": 100},
+        {"name": "Bob", "score": 85}
+    ]
+};
+
+// Update nested value
+data["users"][0]["score"] = 105;
+
+println(data["users"][0]);  // {"name": "Alice", "score": 105}
+```
+
+## Uninitialized variables
+
+<Warning>
+You must initialize variables when declaring them. Walrus does not support uninitialized variables:
+
+```walrus
+let x;  // Error: must provide initial value
+```
+
+If you need a placeholder, use `void`:
+
+```walrus
+let result = void;
+
+if condition {
+    result = calculate_value();
+}
+
+if result != void {
+    println(result);
+}
+```
+</Warning>
+
+## Constants
+
+Walrus doesn't have a special `const` keyword, but by convention, you can use uppercase names for values that shouldn't change:
+
+```walrus
+let MAX_RETRIES = 3;
+let DEFAULT_TIMEOUT = 30;
+let API_VERSION = "v2";
+
+// These are not enforced as immutable, just a convention
+```
+
+## Variable naming conventions
+
+<Tabs>
+  <Tab title="Recommended">
+    ```walrus
+    // Use snake_case for variable names
+    let user_name = "Alice";
+    let total_count = 100;
+    let is_active = true;
+    
+    // Use descriptive names
+    let temperature_celsius = 25.5;
+    let account_balance = 1000.00;
+    ```
+  </Tab>
+  
+  <Tab title="Avoid">
+    ```walrus
+    // Avoid single letters (except in short loops)
+    let x = "Alice";
+    let t = 100;
+    
+    // Avoid unclear abbreviations
+    let tmp = 25.5;
+    let val = 1000.00;
+    
+    // Avoid mixing naming styles
+    let userName = "Alice";     // camelCase
+    let TotalCount = 100;       // PascalCase
+    ```
+  </Tab>
+</Tabs>
+
+## Practical examples
+
+### Counter pattern
+
+```walrus
+let count = 0;
+
+for i in 0..10 {
+    if i % 2 == 0 {
+        count += 1;
+    }
+}
+
+println(f"Even numbers: {count}");  // Even numbers: 5
+```
+
+### Accumulator pattern
+
+```walrus
+let numbers = [1, 2, 3, 4, 5];
+let sum = 0;
+
+for num in numbers {
+    sum += num;
+}
+
+println(f"Sum: {sum}");  // Sum: 15
+```
+
+### Swap variables
+
+```walrus
+let a = 10;
+let b = 20;
+
+// Swap using temporary variable
+let temp = a;
+a = b;
+b = temp;
+
+println(a);  // 20
+println(b);  // 10
+```
+
+### Building collections
+
+```walrus
+// Build a list incrementally
+let results = [];
+
+for i in 0..5 {
+    results.push(i * i);
+}
+
+println(results);  // [0, 1, 4, 9, 16]
+
+// Build a dictionary incrementally
+let scores = {};
+scores["Alice"] = 95;
+scores["Bob"] = 87;
+scores["Charlie"] = 92;
+
+println(scores);
+```
+
+## Best practices
+
+<AccordionGroup>
+  <Accordion title="Initialize variables close to first use">
+    Declare variables near where they're first used:
+    
+    ```walrus
+    // Good
+    if needs_calculation {
+        let result = complex_calculation();
+        println(result);
+    }
+    
+    // Less clear
+    let result = void;
+    // ... many lines of code ...
+    if needs_calculation {
+        result = complex_calculation();
+        println(result);
+    }
+    ```
+  </Accordion>
+  
+  <Accordion title="Use meaningful names">
+    Choose names that explain what the variable represents:
+    
+    ```walrus
+    // Good
+    let remaining_attempts = 3;
+    let user_is_authenticated = true;
+    let error_message = "Connection failed";
+    
+    // Avoid
+    let r = 3;
+    let flag = true;
+    let msg = "Connection failed";
+    ```
+  </Accordion>
+  
+  <Accordion title="Minimize global variable usage">
+    Prefer passing data through function parameters:
+    
+    ```walrus
+    // Good
+    fn calculate_total : items {
+        let total = 0;
+        for item in items {
+            total += item["price"];
+        }
+        return total;
+    }
+    
+    let cart = [{"price": 10}, {"price": 20}];
+    let total = calculate_total(cart);
+    
+    // Avoid (using global)
+    let cart = [{"price": 10}, {"price": 20}];
+    let total = 0;
+    
+    fn calculate_total : {
+        for item in cart {
+            total += item["price"];
+        }
+    }
+    
+    calculate_total();
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Operators" icon="calculator" href="/language/operators">
+    Learn about arithmetic, comparison, and logical operators
+  </Card>
+  
+  <Card title="Control flow" icon="code-branch" href="/language/control-flow">
+    Explore if/else, loops, and control flow statements
+  </Card>
+</CardGroup>

@@ -1,0 +1,97 @@
+---
+title: FizzBuzz
+description: Classic FizzBuzz implementation demonstrating loops and conditionals in Walrus
+---
+
+FizzBuzz is a classic programming challenge that prints numbers from 1 to 100, replacing multiples of 3 with "Fizz", multiples of 5 with "Buzz", and multiples of both with "FizzBuzz".
+
+## Simple implementation
+
+This implementation uses a for loop with a range and string concatenation:
+
+```walrus
+for n in 1..101 {
+    let result = "";
+
+    if n % 3 == 0 {
+        result += "Fizz";
+    }
+
+    if n % 5 == 0 {
+        result += "Buzz";
+    }
+
+    if result == "" {
+        result = n;
+    }
+
+    println(result);
+}
+```
+
+## How to run
+
+Save the code to a file called `fizzbuzz.walrus` and run it:
+
+```bash
+walrus fizzbuzz.walrus
+```
+
+## Expected output
+
+```
+1
+2
+Fizz
+4
+Buzz
+Fizz
+7
+8
+Fizz
+Buzz
+11
+Fizz
+13
+14
+FizzBuzz
+16
+...
+```
+
+## Function-based implementation
+
+You can also implement FizzBuzz as a reusable function that returns a string:
+
+```walrus
+fn fizzbuzz : n {
+    let output = "";
+    for i in 1..(n + 1) {
+        let result = str(i);
+        if i % 15 == 0 {
+            result = "FizzBuzz";
+        } else if i % 3 == 0 {
+            result = "Fizz";
+        } else if i % 5 == 0 {
+            result = "Buzz";
+        }
+        output = output + result + " ";
+    }
+    return output;
+}
+
+println(fizzbuzz(20));
+```
+
+### Output
+
+```
+1 2 Fizz 4 Buzz Fizz 7 8 Fizz Buzz 11 Fizz 13 14 FizzBuzz 16 17 Fizz 19 Buzz
+```
+
+## Key concepts
+
+- **Ranges**: `1..101` creates a range from 1 to 100 (exclusive end)
+- **Modulo operator**: `%` checks for divisibility
+- **String concatenation**: `+=` appends to strings
+- **Type flexibility**: Variables can hold different types (string or integer)

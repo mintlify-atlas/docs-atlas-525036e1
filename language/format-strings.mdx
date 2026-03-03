@@ -1,0 +1,436 @@
+---
+title: Format strings
+description: Master f-string interpolation for creating dynamic strings in Walrus
+---
+
+Format strings (f-strings) in Walrus allow you to embed expressions directly within string literals, making it easy to create dynamic text.
+
+## Basic syntax
+
+Prefix a string with `f` and use `{}` to embed expressions:
+
+```walrus
+let name = "Alice";
+let greeting = f"Hello, {name}!";
+println(greeting);  // Hello, Alice!
+```
+
+## Simple interpolation
+
+### Variables
+
+```walrus
+let user = "Bob";
+let age = 30;
+let city = "Seattle";
+
+println(f"User: {user}");
+println(f"Age: {age}");
+println(f"City: {city}");
+```
+
+### Multiple expressions
+
+```walrus
+let first = "John";
+let last = "Doe";
+
+println(f"Full name: {first} {last}");
+// Full name: John Doe
+```
+
+## Expressions in f-strings
+
+### Arithmetic expressions
+
+```walrus
+let x = 10;
+let y = 20;
+
+println(f"Sum: {x + y}");          // Sum: 30
+println(f"Product: {x * y}");      // Product: 200
+println(f"Average: {(x + y) / 2}"); // Average: 15
+```
+
+### Comparison expressions
+
+```walrus
+let score = 85;
+
+println(f"Passed: {score >= 60}");  // Passed: true
+println(f"Grade A: {score >= 90}"); // Grade A: false
+```
+
+### Function calls
+
+```walrus
+let items = [1, 2, 3, 4, 5];
+
+println(f"List has {len(items)} items");
+// List has 5 items
+
+println(f"Type: {type(items)}");
+// Type: list
+```
+
+### Complex expressions
+
+```walrus
+let price = 99.99;
+let quantity = 3;
+let tax_rate = 0.08;
+
+let total = f"Total: ${price * quantity * (1 + tax_rate)}";
+println(total);  // Total: $323.9676
+```
+
+## Working with collections
+
+### Lists
+
+```walrus
+let numbers = [1, 2, 3, 4, 5];
+
+println(f"Numbers: {numbers}");
+// Numbers: [1, 2, 3, 4, 5]
+
+println(f"First: {numbers[0]}, Last: {numbers[-1]}");
+// First: 1, Last: 5
+```
+
+### Dictionaries
+
+```walrus
+let person = {"name": "Alice", "age": 30};
+
+println(f"Person: {person}");
+// Person: {"name": "Alice", "age": 30}
+
+println(f"Name: {person['name']}, Age: {person['age']}");
+// Name: Alice, Age: 30
+```
+
+### Nested structures
+
+```walrus
+let data = {
+    "user": {"name": "Bob", "id": 123},
+    "scores": [95, 87, 92]
+};
+
+println(f"User: {data['user']['name']} (ID: {data['user']['id']})");
+// User: Bob (ID: 123)
+
+println(f"Scores: {data['scores']}");
+// Scores: [95, 87, 92]
+```
+
+## Escape sequences in f-strings
+
+### Escaped braces
+
+Use backslash to escape braces when you want literal `{` or `}`:
+
+```walrus
+let name = "Alice";
+
+println(f"Use \{braces\} for interpolation: {name}");
+// Use {braces} for interpolation: Alice
+```
+
+### Other escape sequences
+
+```walrus
+println(f"Line 1\nLine 2");  // Newline
+println(f"Tab:\there");      // Tab
+println(f"Quote: \"{name}\""); // Quotes
+```
+
+## Practical examples
+
+### User messages
+
+```walrus
+let username = "Alice";
+let points = 1250;
+let level = 15;
+
+println(f"Welcome back, {username}!");
+println(f"You have {points} points and are at level {level}.");
+println(f"Next level in {2000 - points} points!");
+```
+
+### Formatted reports
+
+```walrus
+let product = "Laptop";
+let price = 999.99;
+let quantity = 2;
+let discount = 0.10;
+
+let subtotal = price * quantity;
+let discount_amount = subtotal * discount;
+let total = subtotal - discount_amount;
+
+println(f"Product: {product}");
+println(f"Price: ${price} x {quantity}");
+println(f"Subtotal: ${subtotal}");
+println(f"Discount ({discount * 100}%): -${discount_amount}");
+println(f"Total: ${total}");
+```
+
+### Progress indicators
+
+```walrus
+let completed = 75;
+let total_tasks = 100;
+let percentage = (completed / total_tasks) * 100;
+
+println(f"Progress: {completed}/{total_tasks} ({percentage}%)");
+// Progress: 75/100 (75%)
+```
+
+### Error messages
+
+```walrus
+fn divide : a, b {
+    if b == 0 {
+        return f"Error: Cannot divide {a} by zero";
+    }
+    return a / b;
+}
+
+println(divide(10, 2));  // 5
+println(divide(10, 0));  // Error: Cannot divide 10 by zero
+```
+
+### Logging and debugging
+
+```walrus
+let user_id = 12345;
+let action = "login";
+let timestamp = "2024-01-15 14:30:00";
+
+println(f"[{timestamp}] User {user_id} performed action: {action}");
+// [2024-01-15 14:30:00] User 12345 performed action: login
+```
+
+### Table formatting
+
+```walrus
+let users = [
+    {"name": "Alice", "score": 95},
+    {"name": "Bob", "score": 87},
+    {"name": "Charlie", "score": 92}
+];
+
+println("Name     | Score");
+println("---------|------");
+
+for user in users {
+    println(f"{user['name']}    | {user['score']}");
+}
+```
+
+### Multi-line strings with interpolation
+
+```walrus
+let name = "Alice";
+let order_id = "ORD-12345";
+let items_count = 3;
+let total = 99.99;
+
+let message = f"Order Confirmation
+
+Hi {name},
+
+Your order {order_id} has been confirmed!
+Items: {items_count}
+Total: ${total}
+
+Thank you for your purchase!";
+
+println(message);
+```
+
+## Common patterns
+
+<Tabs>
+  <Tab title="Debugging">
+    ```walrus
+    let x = 42;
+    let y = [1, 2, 3];
+    let z = {"key": "value"};
+    
+    // Quick debug output
+    println(f"x = {x}, type = {type(x)}");
+    println(f"y = {y}, length = {len(y)}");
+    println(f"z = {z}");
+    ```
+  </Tab>
+  
+  <Tab title="Status messages">
+    ```walrus
+    fn process_items : items {
+        let total = len(items);
+        let processed = 0;
+        
+        for item in items {
+            processed += 1;
+            println(f"Processing {processed}/{total}: {item}");
+            // Process item...
+        }
+        
+        println(f"Complete! Processed {total} items.");
+    }
+    ```
+  </Tab>
+  
+  <Tab title="Conditional formatting">
+    ```walrus
+    let score = 85;
+    let status = "Pass";
+    
+    if score >= 90 {
+        status = "Excellent";
+    } else if score >= 70 {
+        status = "Good";
+    } else if score >= 60 {
+        status = "Pass";
+    } else {
+        status = "Fail";
+    }
+    
+    println(f"Score: {score} - Status: {status}");
+    ```
+  </Tab>
+  
+  <Tab title="Dynamic queries">
+    ```walrus
+    fn build_query : table, conditions, limit {
+        let query = f"SELECT * FROM {table}";
+        
+        if len(conditions) > 0 {
+            query = f"{query} WHERE {conditions[0]}";
+        }
+        
+        if limit != void {
+            query = f"{query} LIMIT {limit}";
+        }
+        
+        return query;
+    }
+    
+    let q = build_query("users", ["age > 18"], 10);
+    println(q);
+    // SELECT * FROM users WHERE age > 18 LIMIT 10
+    ```
+  </Tab>
+</Tabs>
+
+## Performance considerations
+
+<Note>
+F-strings are evaluated at runtime. For frequently used strings, consider building them once and reusing:
+
+```walrus
+// Less efficient in a loop
+for i in 0..1000 {
+    let msg = f"Processing item {i}";
+    // ...
+}
+
+// More efficient if base doesn't change
+let base = "Processing item ";
+for i in 0..1000 {
+    let msg = base + str(i);
+    // ...
+}
+```
+</Note>
+
+## Comparison with string concatenation
+
+<CodeGroup>
+
+```walrus F-strings (recommended)
+let name = "Alice";
+let age = 30;
+
+let message = f"User {name} is {age} years old";
+println(message);
+```
+
+```walrus String concatenation
+let name = "Alice";
+let age = 30;
+
+let message = "User " + name + " is " + str(age) + " years old";
+println(message);
+```
+
+</CodeGroup>
+
+<Note>
+F-strings are generally more readable and maintainable than string concatenation, especially for complex expressions.
+</Note>
+
+## Best practices
+
+<AccordionGroup>
+  <Accordion title="Keep expressions simple">
+    For complex expressions, compute them first:
+    
+    ```walrus
+    // Harder to read
+    println(f"Result: {((a + b) * c / d) ** 2 + (x - y)}");
+    
+    // Better
+    let part1 = ((a + b) * c / d) ** 2;
+    let part2 = x - y;
+    let result = part1 + part2;
+    println(f"Result: {result}");
+    ```
+  </Accordion>
+  
+  <Accordion title="Use f-strings for user-facing messages">
+    F-strings make it easy to create dynamic, readable messages:
+    
+    ```walrus
+    // Good for user messages
+    println(f"Welcome, {user_name}! You have {msg_count} new messages.");
+    
+    // Good for logs
+    println(f"[ERROR] Failed to load file: {filename}");
+    
+    // Good for reports
+    println(f"Sales: ${revenue:.2f} ({growth}% growth)");
+    ```
+  </Accordion>
+  
+  <Accordion title="Combine with type conversion when needed">
+    Use `str()` for explicit type conversion in f-strings:
+    
+    ```walrus
+    let count = 42;
+    
+    // Automatic conversion in f-strings
+    println(f"Count: {count}");
+    
+    // Explicit conversion if needed
+    let message = "Count: " + str(count);
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Standard library" icon="book" href="/stdlib/overview">
+    Explore built-in modules for I/O, system operations, and math
+  </Card>
+  
+  <Card title="Examples" icon="code" href="/examples/hello-world">
+    See real-world examples using all language features
+  </Card>
+</CardGroup>

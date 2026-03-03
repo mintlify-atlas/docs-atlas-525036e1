@@ -1,0 +1,295 @@
+---
+title: VS Code extension and LSP
+description: Language Server Protocol support and VS Code extension for Walrus development
+---
+
+## Overview
+
+Walrus includes a full-featured Language Server Protocol (LSP) implementation and VS Code extension that provides rich IDE support for `.walrus` files.
+
+## Features
+
+The Walrus LSP provides:
+
+- **Parse diagnostics** - Real-time syntax error detection
+- **Hover information** - Rich hover docs for symbols, keywords, and built-ins
+- **Code completion** - Scoped completion for locals, functions, structs, modules, built-ins, and keywords
+- **Signature help** - Function and built-in call parameter hints
+- **Document symbols** - Nested outline view of file structure
+- **Go to definition** - Jump to symbol declarations
+- **Find references** - Locate all uses of a symbol
+- **Rename symbol** - Refactor symbol names across references
+- **Document highlights** - Highlight read/write occurrences of symbols
+- **Syntax highlighting** - Rich syntax coloring
+
+## Installation
+
+<Steps>
+  <Step title="Build the language server">
+    From the repository root:
+
+    ```bash
+    cargo build --release --bin walrus-lsp
+    ```
+
+    The language server binary will be at `target/release/walrus-lsp`.
+  </Step>
+
+  <Step title="Install extension dependencies">
+    Navigate to the extension directory and install npm packages:
+
+    ```bash
+    cd vscode/walrus
+    npm install
+    ```
+  </Step>
+
+  <Step title="Launch Extension Development Host">
+    Open the `vscode/walrus` directory in VS Code:
+
+    ```bash
+    code vscode/walrus
+    ```
+
+    Then press `F5` to launch an Extension Development Host.
+  </Step>
+
+  <Step title="Open a Walrus file">
+    In the Extension Development Host window, open any `.walrus` file to activate the language server.
+  </Step>
+</Steps>
+
+## Configuration
+
+### Extension settings
+
+The extension provides two configuration options:
+
+| Setting | Description | Default |
+| --- | --- | --- |
+| `walrus.languageServer.path` | Path to the language server executable | `walrus-lsp` |
+| `walrus.languageServer.args` | Additional command-line arguments | `[]` |
+
+### Custom language server path
+
+If `walrus-lsp` is not in your `PATH`, configure the absolute path:
+
+```json
+{
+  "walrus.languageServer.path": "/absolute/path/to/walrus/target/release/walrus-lsp"
+}
+```
+
+Add this to your VS Code settings (`.vscode/settings.json` or user settings).
+
+## Language server architecture
+
+### Server implementation
+
+The language server is implemented in `src/bin/walrus-lsp.rs` using:
+
+- **tower-lsp** - LSP server framework
+- **tokio** - Async runtime
+- **walrus::lsp_support** - Analysis and semantic information
+
+Key components:
+
+```rust
+struct Backend {
+    client: Client,
+    docs: Arc<RwLock<HashMap<Url, DocumentState>>>,
+}
+
+struct DocumentState {
+    text: String,
+    analysis: Analysis,
+}
+```
+
+### Analysis module
+
+The `src/lsp_support.rs` module provides semantic analysis:
+
+```rust
+pub struct Analysis {
+    pub diagnostics: Vec<ParseDiagnostic>,
+    pub definitions: Vec<Definition>,
+    pub references: Vec<Reference>,
+    pub scopes: Vec<ScopeInfo>,
+    // ...
+}
+
+pub fn analyze(source: &str) -> Analysis
+```
+
+The analyzer:
+1. Parses the source code
+2. Builds a scope tree
+3. Tracks definitions and references
+4. Resolves symbols across scopes
+5. Collects diagnostics
+
+## Built-in documentation
+
+The LSP includes hover documentation for:
+
+### Keywords
+
+All language keywords (`let`, `fn`, `struct`, `if`, `for`, `while`, etc.) include contextual descriptions.
+
+### Built-in functions
+
+| Function | Signature | Description |
+| --- | --- | --- |
+| `len` | `len(value)` | Returns length of a string, list, or dictionary |
+| `str` | `str(value)` | Converts a value to string |
+| `type` | `type(value)` | Returns the runtime type name for a value |
+| `input` | `input(prompt)` | Reads user input from stdin |
+| `__gc__` | `__gc__()` | Manually triggers garbage collection |
+| `__heap_stats__` | `__heap_stats__()` | Returns heap statistics as a dictionary |
+| `__gc_threshold__` | `__gc_threshold__(threshold)` | Sets GC allocation threshold |
+
+### User-defined symbols
+
+The LSP extracts and displays:
+- Function signatures with parameters
+- Struct definitions
+- Variable declarations
+- Module information
+
+## Completion features
+
+### Scope-aware completion
+
+The LSP provides completions based on the current scope:
+
+- **Local variables** - Variables defined in current function
+- **Function parameters** - Available within function body
+- **Global functions** - Top-level function definitions
+- **Struct methods** - Static methods on struct types
+- **Modules** - Imported module names and their exports
+- **Built-ins** - All built-in functions
+- **Keywords** - Language keywords appropriate for context
+
+### Snippet completion
+
+Function completions include snippet placeholders:
+
+```
+len($1)  // Cursor positioned at $1
+
+quicksort($1, $2)  // Tab between $1 and $2
+```
+
+## Signature help
+
+When typing function calls, the LSP shows parameter information:
+
+```walrus
+quicksort(█
+```
+
+Displays: `fn quicksort : arr`
+
+As you type arguments, the active parameter is highlighted.
+
+## Document symbols
+
+The LSP builds a hierarchical symbol tree showing:
+
+- Top-level functions
+- Struct definitions with nested methods
+- Global variables
+- Module imports
+
+**Symbol kinds:**
+- `Function` - Named functions
+- `Method` - Struct static methods
+- `Struct` - Struct types
+- `Variable` - Let bindings
+- `Module` - Import bindings
+
+## Reference tracking
+
+### Find references
+
+Locates all uses of a symbol, sorted by position.
+
+### Document highlights
+
+Highlights all occurrences in the current file with kind:
+- **Read** - Variable/function reads
+- **Write** - Variable assignments
+
+### Rename refactoring
+
+Renames a symbol and all its references. Validates that the new name is a valid Walrus identifier.
+
+## Extension files
+
+The VS Code extension includes:
+
+```
+vscode/walrus/
+├── extension.js           # Extension entry point
+├── package.json          # Extension manifest
+├── language-configuration.json  # Language config
+└── syntaxes/
+    └── walrus.tmLanguage.json  # TextMate grammar
+```
+
+### Language configuration
+
+Defines comment tokens, brackets, auto-closing pairs:
+
+```json
+{
+  "comments": {
+    "lineComment": "//",
+    "blockComment": ["/*", "*/"]
+  },
+  "brackets": [
+    ["{", "}"],
+    ["[", "]"],
+    ["(", ")"]
+  ]
+}
+```
+
+## Troubleshooting
+
+### LSP not starting
+
+1. Verify the language server is built:
+   ```bash
+   cargo build --release --bin walrus-lsp
+   ```
+
+2. Check the path configuration in VS Code settings
+
+3. View the Output panel (Walrus Language Server) for errors
+
+### Completions not working
+
+- Ensure the file is saved (LSP analyzes on save)
+- Check for parse errors in the Problems panel
+- Restart the Extension Development Host (`F5`)
+
+### Performance issues
+
+For large files:
+- The LSP re-analyzes on every change
+- Consider breaking code into smaller modules
+- Parse errors are expensive - fix syntax issues first
+
+## Contributing to LSP
+
+To improve the language server:
+
+1. Modify `src/bin/walrus-lsp.rs` for server features
+2. Enhance `src/lsp_support.rs` for semantic analysis
+3. Update `vscode/walrus/` for extension changes
+4. Test in Extension Development Host
+5. Submit a pull request
+
+See [Contributing](/development/contributing) for guidelines.

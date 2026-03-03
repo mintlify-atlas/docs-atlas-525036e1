@@ -1,0 +1,321 @@
+---
+title: std/io module
+description: File I/O operations in Walrus including reading, writing, and streaming
+---
+
+The `std/io` module provides comprehensive file I/O operations including handle-based streaming and convenience functions for reading and writing files.
+
+## Import
+
+```walrus
+import "std/io";
+```
+
+## File handles
+
+The `std/io` module uses integer file handles for streaming operations. Handles must be opened with `file_open()` and closed with `file_close()` when finished.
+
+### File modes
+
+| Mode | Description |
+| ---- | ----------- |
+| `"r"` | Read-only mode |
+| `"w"` | Write mode (creates or truncates file) |
+| `"a"` | Append mode (creates if needed) |
+| `"rw"` | Read-write mode (creates if needed) |
+
+## Functions
+
+### file_open
+
+Open a file and return a handle for streaming operations.
+
+```walrus
+let handle = io.file_open(path, mode);
+```
+
+<ParamField path="path" type="string" required>
+  Path to the file to open
+</ParamField>
+
+<ParamField path="mode" type="string" required>
+  File mode: `"r"`, `"w"`, `"a"`, or `"rw"`
+</ParamField>
+
+<ResponseField name="return" type="int">
+  File handle for subsequent operations
+</ResponseField>
+
+**Example:**
+
+```walrus
+import "std/io";
+
+let handle = io.file_open("data.txt", "r");
+```
+
+### file_read
+
+Read the entire contents of an open file handle as a string.
+
+```walrus
+let content = io.file_read(handle);
+```
+
+<ParamField path="handle" type="int" required>
+  File handle from `file_open()`
+</ParamField>
+
+<ResponseField name="return" type="string">
+  Complete file contents as a string
+</ResponseField>
+
+**Example:**
+
+```walrus
+import "std/io";
+
+let handle = io.file_open("data.txt", "r");
+let content = io.file_read(handle);
+io.file_close(handle);
+
+println(content);
+```
+
+### file_read_line
+
+Read a single line from an open file handle. Returns `void` when end-of-file is reached.
+
+```walrus
+let line = io.file_read_line(handle);
+```
+
+<ParamField path="handle" type="int" required>
+  File handle from `file_open()`
+</ParamField>
+
+<ResponseField name="return" type="string | void">
+  The next line from the file (without trailing newline), or `void` at EOF
+</ResponseField>
+
+**Example:**
+
+```walrus
+import "std/io";
+
+let reader = io.file_open("data.txt", "r");
+let line = io.file_read_line(reader);
+
+while line != void {
+    println(line);
+    line = io.file_read_line(reader);
+}
+
+io.file_close(reader);
+```
+
+### file_write
+
+Write a string to an open file handle.
+
+```walrus
+let bytes = io.file_write(handle, content);
+```
+
+<ParamField path="handle" type="int" required>
+  File handle from `file_open()`
+</ParamField>
+
+<ParamField path="content" type="string" required>
+  String content to write to the file
+</ParamField>
+
+<ResponseField name="return" type="int">
+  Number of bytes written
+</ResponseField>
+
+**Example:**
+
+```walrus
+import "std/io";
+
+let handle = io.file_open("data.txt", "w");
+io.file_write(handle, "Line 1\n");
+io.file_write(handle, "Line 2\n");
+io.file_close(handle);
+```
+
+### file_close
+
+Close an open file handle. Always close handles when finished to free system resources.
+
+```walrus
+io.file_close(handle);
+```
+
+<ParamField path="handle" type="int" required>
+  File handle to close
+</ParamField>
+
+<ResponseField name="return" type="void">
+  No return value
+</ResponseField>
+
+**Example:**
+
+```walrus
+import "std/io";
+
+let handle = io.file_open("data.txt", "r");
+let content = io.file_read(handle);
+io.file_close(handle);  // Always close when done
+```
+
+### file_exists
+
+Check if a file exists at the given path.
+
+```walrus
+let exists = io.file_exists(path);
+```
+
+<ParamField path="path" type="string" required>
+  Path to check for existence
+</ParamField>
+
+<ResponseField name="return" type="bool">
+  `true` if the path exists, `false` otherwise
+</ResponseField>
+
+**Example:**
+
+```walrus
+import "std/io";
+
+if io.file_exists("config.txt") {
+    let content = io.read_file("config.txt");
+    println(content);
+} else {
+    println("Config file not found");
+}
+```
+
+### read_file
+
+Convenience function to read an entire file in one operation. Opens, reads, and closes the file automatically.
+
+```walrus
+let content = io.read_file(path);
+```
+
+<ParamField path="path" type="string" required>
+  Path to the file to read
+</ParamField>
+
+<ResponseField name="return" type="string">
+  Complete file contents as a string
+</ResponseField>
+
+**Example:**
+
+```walrus
+import "std/io";
+
+// Simple one-line file reading
+let content = io.read_file("hello.txt");
+println(content);
+```
+
+### write_file
+
+Convenience function to write an entire file in one operation. Opens, writes, and closes the file automatically.
+
+```walrus
+io.write_file(path, content);
+```
+
+<ParamField path="path" type="string" required>
+  Path to the file to write
+</ParamField>
+
+<ParamField path="content" type="string" required>
+  String content to write to the file
+</ParamField>
+
+<ResponseField name="return" type="void">
+  No return value
+</ResponseField>
+
+**Example:**
+
+```walrus
+import "std/io";
+
+// Simple one-line file writing
+io.write_file("hello.txt", "Hello, Walrus!");
+```
+
+## Usage patterns
+
+### Simple read/write
+
+For small files or one-time operations, use the convenience functions:
+
+```walrus
+import "std/io";
+
+// Write
+io.write_file("hello.txt", "Hello, Walrus!");
+
+// Read
+let content = io.read_file("hello.txt");
+println(content);  // Hello, Walrus!
+```
+
+### Handle-based operations
+
+For larger files or streaming, use handles:
+
+```walrus
+import "std/io";
+
+// Writing multiple lines
+let handle = io.file_open("data.txt", "w");
+io.file_write(handle, "Line 1\n");
+io.file_write(handle, "Line 2\n");
+io.file_close(handle);
+```
+
+### Line-by-line reading
+
+Process large files one line at a time:
+
+```walrus
+import "std/io";
+
+let reader = io.file_open("data.txt", "r");
+let line = io.file_read_line(reader);
+
+while line != void {
+    println(line);
+    line = io.file_read_line(reader);
+}
+
+io.file_close(reader);
+```
+
+### Conditional file operations
+
+Check before reading or writing:
+
+```walrus
+import "std/io";
+
+if io.file_exists("config.txt") {
+    let config = io.read_file("config.txt");
+    println(f"Loaded config: {config}");
+} else {
+    println("No config file found, using defaults");
+    io.write_file("config.txt", "default settings");
+}
+```

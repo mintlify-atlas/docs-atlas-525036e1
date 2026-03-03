@@ -1,0 +1,426 @@
+---
+title: Data types
+description: Explore the comprehensive type system in Walrus including primitives, collections, and special values
+---
+
+Walrus is a dynamically-typed language with a rich set of built-in data types. This guide covers all available types and how to work with them.
+
+## Primitive types
+
+### Integers
+
+Whole numbers without decimal points:
+
+```walrus
+let count = 42;
+let negative = -10;
+let zero = 0;
+
+println(count);      // 42
+println(type(count)); // int
+```
+
+### Floats
+
+Numbers with decimal points:
+
+```walrus
+let pi = 3.14159;
+let temperature = -273.15;
+let percentage = 0.95;
+
+println(pi);          // 3.14159
+println(type(pi));    // float
+```
+
+<Note>
+Walrus uses 64-bit floating-point numbers (f64) for all float operations.
+</Note>
+
+### Strings
+
+Sequences of characters enclosed in double quotes:
+
+```walrus
+let greeting = "Hello, World!";
+let name = "Walrus";
+let empty = "";
+
+println(greeting);
+println(len(greeting));  // 13
+```
+
+#### Escape sequences
+
+Strings support common escape sequences:
+
+```walrus
+println("She said \"Hello!\"");  // She said "Hello!"
+println("Path: C:\\\\Users");      // Path: C:\\Users
+println("Line 1\nLine 2");        // Two lines
+println("Tab:\there");            // Tab separated
+```
+
+| Escape | Result |
+|--------|--------|
+| `\"` | Double quote |
+| `\\` | Backslash |
+| `\n` | Newline |
+| `\t` | Tab |
+| `\r` | Carriage return |
+
+#### String operations
+
+```walrus
+// Concatenation
+let full_name = "Alice" + " " + "Smith";
+
+// Indexing (0-based)
+let first_char = greeting[0];  // "H"
+let last_char = greeting[-1];  // "!"
+
+// Slicing
+let substr = greeting[0..5];   // "Hello"
+```
+
+### Booleans
+
+True or false values:
+
+```walrus
+let is_active = true;
+let is_complete = false;
+
+println(is_active);        // true
+println(type(is_active));  // bool
+
+// Boolean operations
+let result = true and false;  // false
+let result2 = true or false;  // true
+let result3 = not true;       // false
+```
+
+## Collection types
+
+### Lists
+
+Ordered, mutable collections that can hold mixed types:
+
+```walrus
+let numbers = [1, 2, 3, 4, 5];
+let mixed = [1, "hello", true, 3.14];
+let empty = [];
+
+println(numbers);       // [1, 2, 3, 4, 5]
+println(len(numbers));  // 5
+```
+
+#### List operations
+
+<Tabs>
+  <Tab title="Access">
+    ```walrus
+    let items = [10, 20, 30, 40, 50];
+    
+    // Positive indexing
+    println(items[0]);   // 10 (first element)
+    println(items[2]);   // 30
+    
+    // Negative indexing
+    println(items[-1]);  // 50 (last element)
+    println(items[-2]);  // 40
+    
+    // Slicing
+    println(items[1..4]);   // [20, 30, 40]
+    println(items[0..2]);   // [10, 20]
+    ```
+  </Tab>
+  
+  <Tab title="Modify">
+    ```walrus
+    let nums = [1, 2, 3];
+    
+    // Append elements
+    nums.push(4);
+    println(nums);  // [1, 2, 3, 4]
+    
+    // Update by index
+    nums[0] = 10;
+    println(nums);  // [10, 2, 3, 4]
+    
+    // Concatenation
+    let combined = [1, 2] + [3, 4];
+    println(combined);  // [1, 2, 3, 4]
+    
+    // In-place concatenation
+    let list = [1, 2];
+    list += [3, 4];
+    println(list);  // [1, 2, 3, 4]
+    ```
+  </Tab>
+  
+  <Tab title="Iterate">
+    ```walrus
+    let fruits = ["apple", "banana", "cherry"];
+    
+    // For-each loop
+    for fruit in fruits {
+        println(fruit);
+    }
+    
+    // With index using range
+    for i in 0..len(fruits) {
+        println(f"{i}: {fruits[i]}");
+    }
+    ```
+  </Tab>
+</Tabs>
+
+### Tuples
+
+Immutable, ordered collections:
+
+```walrus
+let point = (3, 4);
+let person = ("Alice", 30, "Seattle");
+
+println(point);        // (3, 4)
+println(point[0]);     // 3
+println(len(person));  // 3
+```
+
+<Warning>
+Tuples are immutable. Once created, their elements cannot be modified:
+
+```walrus
+let coords = (10, 20);
+coords[0] = 15;  // Error: cannot modify tuple
+```
+</Warning>
+
+### Dictionaries
+
+Key-value pairs (hash maps):
+
+```walrus
+let person = {
+    "name": "Alice",
+    "age": 30,
+    "city": "Seattle"
+};
+
+println(person["name"]);  // Alice
+println(len(person));     // 3
+```
+
+#### Dictionary operations
+
+```walrus
+let config = {};
+
+// Add entries
+config["debug"] = true;
+config["port"] = 8080;
+
+// Update entries
+config["port"] = 3000;
+
+// Merge dictionaries
+let defaults = {"timeout": 30};
+config += defaults;
+
+println(config);
+// {"debug": true, "port": 3000, "timeout": 30}
+
+// Iterate over entries
+for entry in config {
+    println(entry);  // Each entry is a tuple: (key, value)
+}
+```
+
+<Note>
+Dictionary keys must be strings. Values can be any type.
+</Note>
+
+### Ranges
+
+Sequences of integers used primarily in loops:
+
+```walrus
+// Exclusive range: 0 to 9
+for i in 0..10 {
+    println(i);
+}
+
+// Range from variable
+let n = 5;
+for i in 0..n {
+    println(i);  // 0, 1, 2, 3, 4
+}
+
+// Can be used with lists
+let items = ["a", "b", "c", "d"];
+for i in 0..len(items) {
+    println(f"{i}: {items[i]}");
+}
+```
+
+<Warning>
+Ranges are half-open intervals: `a..b` includes `a` but excludes `b`.
+
+```walrus
+// 1..5 produces: 1, 2, 3, 4 (NOT 5)
+for i in 1..5 {
+    println(i);
+}
+```
+</Warning>
+
+## Special types
+
+### void
+
+Represents the absence of a value:
+
+```walrus
+let result = void;
+
+if result == void {
+    println("No value");
+}
+
+// Functions without return statement return void
+fn do_something : {
+    println("Done");
+    // Implicitly returns void
+}
+```
+
+### Functions
+
+Functions are first-class values in Walrus:
+
+```walrus
+fn add : a, b {
+    return a + b;
+}
+
+// Assign function to variable
+let operation = add;
+
+// Call through variable
+let result = operation(5, 3);  // 8
+
+println(type(add));  // function
+```
+
+## Type checking
+
+Use the `type()` built-in function to check a value's type:
+
+```walrus
+println(type(42));          // int
+println(type(3.14));        // float
+println(type("hello"));     // string
+println(type(true));        // bool
+println(type([1, 2, 3]));   // list
+println(type((1, 2)));      // tuple
+println(type({"a": 1}));    // dict
+println(type(void));        // void
+```
+
+## Type conversions
+
+### To string
+
+Convert any value to a string:
+
+```walrus
+let num = 42;
+let text = str(num);        // "42"
+
+let items = [1, 2, 3];
+let items_str = str(items); // "[1, 2, 3]"
+
+println("Count: " + str(100));
+```
+
+### Implicit conversions
+
+Walrus performs automatic type conversions in certain contexts:
+
+```walrus
+// Integer to float in arithmetic
+let result = 5 / 2.0;  // 2.5 (float)
+
+// Automatic string conversion in print
+println(42);           // Prints "42"
+println([1, 2, 3]);    // Prints "[1, 2, 3]"
+```
+
+## Working with mixed types
+
+Collections can contain mixed types:
+
+```walrus
+let mixed = [
+    42,
+    "text",
+    true,
+    [1, 2, 3],
+    {"key": "value"}
+];
+
+for item in mixed {
+    println(f"Type: {type(item)}, Value: {item}");
+}
+```
+
+## Best practices
+
+<AccordionGroup>
+  <Accordion title="Use appropriate collection types">
+    Choose the right collection for your use case:
+    
+    - **Lists**: When you need ordered, mutable data
+    - **Tuples**: For fixed-size, immutable groupings
+    - **Dictionaries**: For key-value associations
+    - **Ranges**: For sequential integer iteration
+  </Accordion>
+  
+  <Accordion title="Check for void before using values">
+    When a value might be void, check before using it:
+    
+    ```walrus
+    import "std/sys";
+    
+    let home = sys.env_get("HOME");
+    if home != void {
+        println(f"Home: {home}");
+    } else {
+        println("HOME not set");
+    }
+    ```
+  </Accordion>
+  
+  <Accordion title="Use type() for debugging">
+    When debugging type-related issues, use `type()` to inspect values:
+    
+    ```walrus
+    let value = some_function();
+    println(f"Got type: {type(value)}");
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Variables" icon="box" href="/language/variables">
+    Learn how to declare and assign variables
+  </Card>
+  
+  <Card title="Operators" icon="calculator" href="/language/operators">
+    Explore arithmetic, comparison, and logical operators
+  </Card>
+</CardGroup>

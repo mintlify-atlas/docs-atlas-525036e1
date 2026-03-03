@@ -1,0 +1,74 @@
+---
+title: Quicksort
+description: Recursive quicksort algorithm implementation demonstrating advanced recursion and list operations
+---
+
+Quicksort is a classic divide-and-conquer sorting algorithm that demonstrates Walrus's support for recursion, list operations, and functional programming patterns.
+
+## Implementation
+
+```walrus
+fn quicksort : arr {
+    if len(arr) <= 1 {
+        return arr;
+    }
+
+    let pivot = arr[0];
+    let less = [];
+    let equal = [];
+    let greater = [];
+
+    for x in arr {
+        if x < pivot {
+            less.push(x);
+        } else if x == pivot {
+            equal.push(x);
+        } else {
+            greater.push(x);
+        }
+    }
+
+    return quicksort(less) + equal + quicksort(greater);
+}
+
+let unsorted = [64, 34, 25, 12, 22, 11, 90, 88];
+let sorted = quicksort(unsorted);
+println("Unsorted: " + str(unsorted));
+println("Sorted:   " + str(sorted));
+```
+
+## How to run
+
+Save the code to a file called `quicksort.walrus` and run it:
+
+```bash
+walrus quicksort.walrus
+```
+
+## Expected output
+
+```
+Unsorted: [64, 34, 25, 12, 22, 11, 90, 88]
+Sorted:   [11, 12, 22, 25, 34, 64, 88, 90]
+```
+
+## How it works
+
+1. **Base case**: If the list has 0 or 1 elements, it's already sorted
+2. **Partition**: Choose the first element as the pivot and partition the list into three groups:
+   - `less`: Elements smaller than the pivot
+   - `equal`: Elements equal to the pivot
+   - `greater`: Elements greater than the pivot
+3. **Recursion**: Recursively sort the `less` and `greater` lists
+4. **Combine**: Concatenate the sorted sublists with `+` operator
+
+## Key concepts
+
+- **Recursion**: The function calls itself to sort sublists
+- **List operations**: Creating empty lists, pushing elements, and concatenation
+- **List iteration**: Using `for x in arr` to iterate over elements
+- **Pattern matching**: Using if/else chains to categorize elements
+
+## Performance note
+
+Walrus supports tail call optimization for recursive functions. While this quicksort implementation is not tail-recursive, Walrus handles the recursion efficiently through its bytecode VM with proper call frames.

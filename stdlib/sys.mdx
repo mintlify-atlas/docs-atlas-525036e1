@@ -1,0 +1,255 @@
+---
+title: std/sys module
+description: System operations including environment variables, command-line arguments, and process control
+---
+
+The `std/sys` module provides access to system-level operations including environment variables, command-line arguments, working directory, and process control.
+
+## Import
+
+```walrus
+import "std/sys";
+```
+
+## Functions
+
+### env_get
+
+Get the value of an environment variable by name. Returns `void` if the variable is not set.
+
+```walrus
+let value = sys.env_get(name);
+```
+
+<ParamField path="name" type="string" required>
+  Name of the environment variable to retrieve
+</ParamField>
+
+<ResponseField name="return" type="string | void">
+  The value of the environment variable, or `void` if not set
+</ResponseField>
+
+**Example:**
+
+```walrus
+import "std/sys";
+
+let home = sys.env_get("HOME");
+if home != void {
+    println(f"Home directory: {home}");
+} else {
+    println("HOME not set");
+}
+
+let user = sys.env_get("USER");
+if user != void {
+    println(f"Current user: {user}");
+}
+```
+
+### args
+
+Get all command-line arguments as a list of strings. The first element is the program name, followed by any arguments passed to the script.
+
+```walrus
+let arguments = sys.args();
+```
+
+<ResponseField name="return" type="list">
+  List of command-line arguments. Index 0 is the program name, indices 1+ are user arguments
+</ResponseField>
+
+**Example:**
+
+```walrus
+import "std/sys";
+
+let args = sys.args();
+println(f"Program: {args[0]}");
+
+if len(args) > 1 {
+    println(f"Arguments: {args[1..]}");
+    for arg in args[1..] {
+        println(f"  - {arg}");
+    }
+} else {
+    println("No arguments provided");
+}
+```
+
+**Command line:**
+```bash
+$ walrus script.walrus input.txt output.txt
+```
+
+**Output:**
+```
+Program: script.walrus
+Arguments: ["input.txt", "output.txt"]
+  - input.txt
+  - output.txt
+```
+
+### cwd
+
+Get the current working directory as a string. Returns `void` if the working directory cannot be determined.
+
+```walrus
+let directory = sys.cwd();
+```
+
+<ResponseField name="return" type="string | void">
+  The absolute path to the current working directory, or `void` on error
+</ResponseField>
+
+**Example:**
+
+```walrus
+import "std/sys";
+
+let current = sys.cwd();
+if current != void {
+    println(f"Working directory: {current}");
+}
+```
+
+### exit
+
+Exit the program immediately with the specified status code. By convention, 0 indicates success and non-zero values indicate errors.
+
+```walrus
+sys.exit(code);
+```
+
+<ParamField path="code" type="int" required>
+  Exit status code. Use 0 for success, non-zero for errors
+</ParamField>
+
+<ResponseField name="return" type="never">
+  This function never returns; it terminates the program
+</ResponseField>
+
+**Example:**
+
+```walrus
+import "std/sys";
+
+let args = sys.args();
+
+if len(args) < 2 {
+    println("Usage: walrus script.walrus <filename>");
+    sys.exit(1);  // Exit with error code
+}
+
+println("Processing file...");
+// ... do work ...
+sys.exit(0);  // Exit successfully
+```
+
+## Usage patterns
+
+### Environment configuration
+
+Read configuration from environment variables:
+
+```walrus
+import "std/sys";
+import "std/io";
+
+// Get config path from environment
+let config_path = sys.env_get("APP_CONFIG");
+if config_path == void {
+    config_path = "default.conf";  // Fallback to default
+}
+
+if io.file_exists(config_path) {
+    let config = io.read_file(config_path);
+    println(f"Loaded config from {config_path}");
+}
+```
+
+### Command-line argument parsing
+
+Process command-line arguments:
+
+```walrus
+import "std/sys";
+import "std/io";
+
+let args = sys.args();
+
+if len(args) < 3 {
+    println(f"Usage: {args[0]} <input> <output>");
+    sys.exit(1);
+}
+
+let input_file = args[1];
+let output_file = args[2];
+
+if !io.file_exists(input_file) {
+    println(f"Error: Input file '{input_file}' not found");
+    sys.exit(1);
+}
+
+let content = io.read_file(input_file);
+io.write_file(output_file, content);
+println(f"Copied {input_file} to {output_file}");
+```
+
+### System information display
+
+Show system information:
+
+```walrus
+import "std/sys";
+
+println("System Information:");
+println(f"  Working Directory: {sys.cwd()}");
+
+let user = sys.env_get("USER");
+if user != void {
+    println(f"  Current User: {user}");
+}
+
+let home = sys.env_get("HOME");
+if home != void {
+    println(f"  Home Directory: {home}");
+}
+
+let path = sys.env_get("PATH");
+if path != void {
+    println(f"  PATH: {path}");
+}
+```
+
+### Graceful error handling
+
+Validate inputs and exit with appropriate codes:
+
+```walrus
+import "std/sys";
+import "std/io";
+
+let args = sys.args();
+
+if len(args) != 2 {
+    println("Error: Expected exactly one argument");
+    sys.exit(1);
+}
+
+let filename = args[1];
+
+if !io.file_exists(filename) {
+    println(f"Error: File '{filename}' does not exist");
+    sys.exit(2);
+}
+
+let content = io.read_file(filename);
+if len(content) == 0 {
+    println(f"Warning: File '{filename}' is empty");
+    sys.exit(3);
+}
+
+println(f"Successfully processed {filename}");
+sys.exit(0);
+```

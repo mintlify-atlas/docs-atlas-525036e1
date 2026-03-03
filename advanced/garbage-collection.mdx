@@ -1,0 +1,261 @@
+---
+title: Garbage collection
+description: Mark-and-sweep GC with arena allocation, memory tracking, and configurable thresholds
+---
+
+Walrus uses a **mark-and-sweep garbage collector** to automatically manage heap memory. The GC traces from roots to mark reachable objects, then sweeps away unmarked (unreachable) objects.
+
+## Arena-based heap allocation
+
+Heap objects are stored in separate arenas by type using `slotmap::DenseSlotMap` (`src/arenas.rs`):
+
+```rust
+pub struct ValueHolder {
+    strings: Interner,                    // String interning
+    lists: DenseSlotMap<ListKey, Vec<Value>>,
+    tuples: DenseSlotMap<TupleKey, Vec<Value>>,
+    dicts: DenseSlotMap<DictKey, FxHashMap<Value, Value>>,
+    functions: DenseSlotMap<FuncKey, WalrusFunction>,
+    iterators: DenseSlotMap<IterKey, ValueIterator>,
+    struct_defs: DenseSlotMap<StructDefKey, StructDefinition>,
+    struct_insts: DenseSlotMap<StructInstKey, StructInstance>,
+    gc_state: GcState,
+}
+```
+
+Benefits of arena allocation:
+
+- Type-safe keys prevent use-after-free bugs
+- Generation counters catch stale references
+- Fast allocation and iteration
+- Cache-friendly memory layout
+
+## Value representation
+
+The `Value` enum stores primitives inline and heap objects as keys:
+
+```rust
+pub enum Value {
+    // Inline (no GC needed)
+    Int(i64),
+    Float(FloatOrd<f64>),
+    Bool(bool),
+    Range(RangeValue),
+    Void,
+    
+    // Heap-allocated (GC managed)
+    String(StringKey),
+    List(ListKey),
+    Tuple(TupleKey),
+    Dict(DictKey),
+    Function(FuncKey),
+    Iter(IterKey),
+    StructDef(StructDefKey),
+    StructInst(StructInstKey),
+}
+```
+
+This design keeps `Value` small (16 bytes) while supporting large heap objects.
+
+## Mark-and-sweep algorithm
+
+Garbage collection happens in two phases:
+
+### Mark phase
+
+Starting from roots, the GC recursively marks all reachable objects. Roots include:
+
+- Values on the operand stack
+- All local variables (shared locals vector)
+- All global variables
+- Constants in all call frames' instruction sets
+
+```rust
+fn collect_roots(&self) -> Vec<Value> {
+    let mut roots = Vec::new();
+    roots.extend(self.stack.iter().copied());
+    roots.extend(self.locals.iter().copied());
+    roots.extend(self.globals.iter().copied());
+    for frame in &self.call_stack {
+        roots.extend(frame.instructions.constants.iter().copied());
+    }
+    roots
+}
+```
+
+The mark phase uses a `GcState` struct (`src/gc.rs:86`) to track marked objects:
+
+```rust
+pub struct GcState {
+    marked_lists: FxHashSet<ListKey>,
+    marked_tuples: FxHashSet<TupleKey>,
+    marked_dicts: FxHashSet<DictKey>,
+    marked_functions: FxHashSet<FuncKey>,
+    marked_iters: FxHashSet<IterKey>,
+    marked_struct_defs: FxHashSet<StructDefKey>,
+    marked_struct_insts: FxHashSet<StructInstKey>,
+    marked_strings: FxHashSet<StringKey>,
+    // ...
+}
+```
+
+### Sweep phase
+
+After marking, the GC iterates through each arena and removes unmarked objects:
+
+```rust
+// Sweep lists
+for key in self.lists.keys().collect::<Vec<_>>() {
+    if !gc_state.is_list_marked(key) {
+        if let Some(list) = self.lists.remove(key) {
+            freed += estimate_list_size(list.len(), list.capacity());
+        }
+    }
+}
+```
+
+Freed memory is tracked and reported via `__heap_stats__()`.
+
+## Memory tracking
+
+The GC tracks allocation count and estimated bytes to determine when to collect (`src/gc.rs:114`):
+
+```rust
+pub fn record_allocation(&mut self, bytes: usize) -> bool {
+    self.allocation_count += 1;
+    self.bytes_allocated += bytes;
+    
+    self.allocation_count >= get_allocation_threshold()
+        || self.bytes_allocated >= get_memory_threshold()
+}
+```
+
+Default thresholds:
+
+- **Allocation count**: 1024 allocations
+- **Memory threshold**: 8 MB
+
+Memory estimation functions (`src/gc.rs:56`):
+
+```rust
+pub fn estimate_list_size(len: usize, capacity: usize) -> usize {
+    size_of::<Vec<Value>>() + capacity * VALUE_SIZE
+}
+
+pub fn estimate_dict_size(len: usize) -> usize {
+    size_of::<FxHashMap<Value, Value>>() + len * (2 * VALUE_SIZE + 16)
+}
+
+pub fn estimate_function_size(bytecode_len: usize, constants_len: usize) -> usize {
+    64 + bytecode_len * 16 + constants_len * VALUE_SIZE
+}
+```
+
+These estimates trigger GC before memory exhaustion.
+
+## Configurable thresholds
+
+Users can adjust GC behavior at runtime:
+
+```walrus
+// Set allocation threshold to 2048 allocations
+__gc_threshold__(2048);
+
+// Manually trigger collection
+__gc__();
+
+// Get heap statistics
+let stats = __heap_stats__();
+println(stats);
+// { "total_bytes_freed": 12345, "total_collections": 5, ... }
+```
+
+The `__gc_threshold__()` function sets both allocation and memory thresholds proportionally (`src/native_registry.rs`).
+
+## String interning
+
+Strings use the `strena` crate for automatic deduplication:
+
+```rust
+pub struct ValueHolder {
+    strings: Interner,  // String interning pool
+    // ...
+}
+```
+
+Identical strings share the same heap allocation:
+
+```walrus
+let s1 = "hello";
+let s2 = "hello";
+// s1 and s2 reference the same StringKey
+```
+
+This reduces memory usage for programs with repeated string constants.
+
+## GC statistics
+
+The GC tracks lifetime statistics:
+
+- `total_bytes_freed` - cumulative bytes freed across all collections
+- `total_collections` - number of GC cycles run
+- `allocation_count` - allocations since last collection
+- `bytes_allocated` - estimated bytes since last collection
+
+Access via `__heap_stats__()`:
+
+```walrus
+let stats = __heap_stats__();
+println(f"Collections: {stats[\"total_collections\"]} ");
+println(f"Bytes freed: {stats[\"total_bytes_freed\"]} ");
+```
+
+## Performance characteristics
+
+- **Mark phase**: O(live set size) - traces all reachable objects
+- **Sweep phase**: O(total heap size) - iterates all arenas
+- **Allocation**: O(1) - DenseSlotMap insert
+- **Trigger overhead**: Checked every 256 instructions (via polling counter)
+
+## Preventing collection pauses
+
+For latency-sensitive code, increase thresholds:
+
+```walrus
+// Increase to 10MB threshold
+__gc_threshold__(10000);
+
+// Run expensive computation
+for i in 0..1000000 {
+    // ...
+}
+
+// Restore default
+__gc_threshold__(1024);
+```
+
+Or manually trigger collection at convenient times:
+
+```walrus
+for batch in batches {
+    process(batch);
+    __gc__();  // Collect between batches
+}
+```
+
+## Future optimizations
+
+Potential improvements:
+
+- **Generational GC**: Young generation for short-lived objects
+- **Incremental marking**: Spread mark phase across multiple VM cycles
+- **Parallel sweep**: Use multiple threads for sweeping
+- **Compaction**: Reduce heap fragmentation
+- **Write barriers**: Track inter-generational references
+
+## Source references
+
+- GC implementation: `src/gc.rs`
+- Arena definitions: `src/arenas.rs`
+- GC integration in VM: `src/vm/mod.rs:279`
+- Built-in functions: `src/native_registry.rs`

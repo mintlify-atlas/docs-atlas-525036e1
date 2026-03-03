@@ -1,0 +1,204 @@
+---
+title: Introduction to Walrus
+description: A fast, expressive programming language with a clean syntax and powerful features, built in Rust
+---
+
+# 🦭 Walrus Programming Language
+
+## Welcome to Walrus
+
+Walrus is a dynamically-typed, interpreted programming language that combines simplicity with power. It features both a tree-walking interpreter and a **bytecode virtual machine** for efficient execution, along with a **mark-and-sweep garbage collector** and comprehensive support for modern programming paradigms.
+
+## Key features
+
+<CardGroup cols={2}>
+  <Card
+    title="Bytecode VM"
+    icon="microchip"
+    iconType="duotone"
+  >
+    High-performance stack-based virtual machine with 80+ opcodes, call frames, and tail call optimization
+  </Card>
+  <Card
+    title="JIT compilation"
+    icon="bolt"
+    iconType="duotone"
+  >
+    Optional Cranelift-powered JIT compiler for hot loops with up to 68x speedup on intensive computations
+  </Card>
+  <Card
+    title="First-class functions"
+    icon="function"
+    iconType="duotone"
+  >
+    Functions as values with nested function support, closures, and higher-order functions
+  </Card>
+  <Card
+    title="Automatic memory management"
+    icon="memory"
+    iconType="duotone"
+  >
+    Mark-and-sweep garbage collector with configurable thresholds and arena-based heap allocation
+  </Card>
+  <Card
+    title="Rich data types"
+    icon="database"
+    iconType="duotone"
+  >
+    Integers, floats, strings, booleans, lists, tuples, dictionaries, and ranges with comprehensive operations
+  </Card>
+  <Card
+    title="Standard library"
+    icon="book"
+    iconType="duotone"
+  >
+    File I/O, system operations, and comprehensive math utilities with import system
+  </Card>
+</CardGroup>
+
+## Language highlights
+
+### Clean, expressive syntax
+
+```walrus
+fn factorial : n {
+    if n <= 1 {
+        return 1;
+    }
+    return n * factorial(n - 1);
+}
+
+let result = factorial(5);  // 120
+println(f"5! = {result}");
+```
+
+### Structs and methods
+
+```walrus
+struct Point {
+    fn new : x, y {
+        return {"x": x, "y": y};
+    }
+
+    fn distance : p1, p2 {
+        let dx = p1["x"] - p2["x"];
+        let dy = p1["y"] - p2["y"];
+        return (dx * dx + dy * dy) ** 0.5;
+    }
+}
+
+let p1 = Point.new(3, 4);
+let p2 = Point.new(0, 0);
+let dist = Point.distance(p1, p2);  // 5.0
+```
+
+### Format strings
+
+```walrus
+let name = "Alice";
+let age = 30;
+let items = [1, 2, 3];
+
+println(f"Hello, {name}!");
+println(f"Next year you'll be {age + 1}");
+println(f"List has {len(items)} items: {items}");
+```
+
+## Execution modes
+
+Walrus provides multiple execution modes to suit different workflows:
+
+<CardGroup cols={3}>
+  <Card title="Script execution" icon="file-code">
+    Run Walrus programs directly from files
+    ```bash
+    walrus program.walrus
+    ```
+  </Card>
+  <Card title="REPL" icon="terminal">
+    Interactive shell for rapid prototyping and testing
+    ```bash
+    walrus
+    ```
+  </Card>
+  <Card title="Bytecode mode" icon="gears">
+    Explicit bytecode compilation and VM execution
+    ```bash
+    walrus -c program.walrus
+    ```
+  </Card>
+</CardGroup>
+
+## Performance
+
+With the optional JIT compiler enabled, Walrus can achieve dramatic speedups on computational workloads:
+
+| Benchmark | Interpreter | JIT | Speedup |
+| --- | --- | --- | --- |
+| 10K iterations × sum(0..1000) | 0.68s | 0.01s | **~68x** |
+
+<Note>
+  JIT compilation requires building with the `--features jit` flag and is most effective for hot integer range loops.
+</Note>
+
+## Get started
+
+<CardGroup cols={2}>
+  <Card
+    title="Installation"
+    icon="download"
+    href="/installation"
+  >
+    Install Walrus and set up your development environment
+  </Card>
+  <Card
+    title="Quickstart"
+    icon="rocket"
+    href="/quickstart"
+  >
+    Write your first Walrus program in minutes
+  </Card>
+  <Card
+    title="Language reference"
+    icon="book-open"
+    href="/language/syntax"
+  >
+    Explore Walrus syntax, data types, and language features
+  </Card>
+  <Card
+    title="Standard library"
+    icon="boxes-stacked"
+    href="/stdlib/overview"
+  >
+    Learn about built-in functions and standard library modules
+  </Card>
+</CardGroup>
+
+## Why Walrus?
+
+<AccordionGroup>
+  <Accordion title="Fast execution">
+    Walrus uses a bytecode virtual machine with 80+ opcodes for efficient execution. The VM features proper call frames, tail call optimization, and optional JIT compilation for hot loops using Cranelift.
+  </Accordion>
+  <Accordion title="Clean syntax">
+    Walrus syntax is designed to be readable and expressive. Functions use the `: param` syntax, structs provide static methods, and format strings support embedded expressions.
+  </Accordion>
+  <Accordion title="Modern features">
+    First-class functions, closures, structs with methods, comprehensive data types, and a rich standard library make Walrus suitable for a wide range of applications.
+  </Accordion>
+  <Accordion title="Built in Rust">
+    Walrus is implemented in Rust, leveraging the language's performance and safety guarantees. The codebase uses modern Rust practices including arena allocation and custom allocators.
+  </Accordion>
+</AccordionGroup>
+
+## Next steps
+
+Ready to start coding in Walrus? Follow our quickstart guide to write your first program:
+
+<Card
+  title="Quickstart guide"
+  icon="play"
+  href="/quickstart"
+>
+  Get up and running with Walrus in under 5 minutes
+</Card>

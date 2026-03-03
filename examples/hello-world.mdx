@@ -1,0 +1,72 @@
+---
+title: Hello World
+description: Your first Walrus program - the classic Hello World example
+---
+
+The simplest Walrus program prints a message to the console using the built-in `println` function.
+
+## Basic hello world
+
+```walrus
+println("Hello, World!");
+```
+
+## How to run
+
+Save the code to a file called `hello.walrus` and run it:
+
+```bash
+walrus hello.walrus
+```
+
+## Expected output
+
+```
+Hello, World!
+```
+
+## Using format strings
+
+Walrus supports format strings (f-strings) for embedded expressions:
+
+```walrus
+let name = "Alice";
+let age = 30;
+
+println(f"Hello, {name}!");
+println(f"You are {age} years old.");
+println(f"Next year you'll be {age + 1}");
+```
+
+### Output
+
+```
+Hello, Alice!
+You are 30 years old.
+Next year you'll be 31
+```
+
+## Multiple values
+
+You can print different types of values:
+
+```walrus
+let integer = 42;
+let floating = 3.14159;
+let text = "Hello, Walrus!";
+let flag = true;
+
+println("Integer: " + str(integer));
+println("Float: " + str(floating));
+println("String: " + text);
+println("Boolean: " + str(flag));
+```
+
+### Output
+
+```
+Integer: 42
+Float: 3.14159
+String: Hello, Walrus!
+Boolean: true
+```

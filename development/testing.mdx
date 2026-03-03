@@ -1,0 +1,142 @@
+---
+title: Testing
+description: Running the Walrus test suite and validating language features
+---
+
+## Test suite overview
+
+The Walrus test suite is located in the `tests/` directory and contains `.walrus` files that exercise various language features.
+
+<Note>
+As of now, the testing suite is extremely incomplete and immature. Many language features lack dedicated tests, and existing tests may not cover all edge cases. There is no automatic test runner or framework in place yet - correctness is evaluated manually by inspecting output.
+</Note>
+
+## Running tests
+
+### Individual test files
+
+You can run individual test files using the Walrus interpreter:
+
+<CodeGroup>
+```bash Compiled mode (bytecode VM)
+cargo run --release -- tests/fibonacci.walrus -c
+```
+
+```bash Interpreted mode (tree-walking)
+cargo run -- tests/fibonacci.walrus -i
+```
+
+```bash Using built binary
+./target/release/walrus tests/fibonacci.walrus
+```
+</CodeGroup>
+
+### Test file categories
+
+The test files cover various language features:
+
+- **Control flow** - if/else, while loops, for loops, break/continue
+- **Functions** - Named functions, anonymous functions, closures, recursion
+- **Data structures** - Lists, dictionaries, tuples, ranges
+- **Structs** - Struct definitions, static methods
+- **String manipulation** - Slicing, indexing, format strings
+- **Operators** - Arithmetic, comparison, logical, short-circuit evaluation
+- **Memory management** - Garbage collection stress tests
+- **Standard library** - File I/O, system operations, math functions
+
+## Manual validation
+
+Currently, tests are validated by:
+
+1. Running the test file
+2. Inspecting the output
+3. Verifying expected behavior manually
+
+<Steps>
+  <Step title="Run the test">
+    ```bash
+    cargo run --release -- tests/example.walrus
+    ```
+  </Step>
+
+  <Step title="Check the output">
+    Verify the output matches expected results.
+  </Step>
+
+  <Step title="Test different execution modes">
+    Run the same test in both interpreted and compiled modes to ensure consistency:
+
+    ```bash
+    # Interpreted mode
+    cargo run -- tests/example.walrus -i
+
+    # Compiled mode (bytecode VM)
+    cargo run -- tests/example.walrus -c
+    ```
+  </Step>
+</Steps>
+
+## Comment support in tests
+
+Walrus supports both single-line and multi-line comments in test files:
+
+**Single-line comments:**
+
+```walrus
+// This is a single-line comment
+let x = 42; // Comment after code
+```
+
+**Multi-line comments:**
+
+```walrus
+/* This is a multi-line comment
+   that spans multiple lines */
+let y = 84; /* Inline multi-line comment */
+```
+
+Use comments to document test behavior and expected outcomes.
+
+## Writing new tests
+
+When adding new language features, create corresponding test files:
+
+1. Create a `.walrus` file in the `tests/` directory
+2. Name it descriptively (e.g., `string_slicing.walrus`)
+3. Include comments explaining what is being tested
+4. Add test cases that cover edge cases
+5. Run the test to verify correct behavior
+
+**Example test structure:**
+
+```walrus
+// Test: String slicing operations
+// Expected: Various slice operations should work correctly
+
+let text = "Hello, World!";
+
+// Basic slice
+let hello = text[0..5];
+println(hello);  // Should print: Hello
+
+// Slice to end
+let world = text[7..];
+println(world);  // Should print: World!
+
+// Negative indices
+let last = text[-1];
+println(last);  // Should print: !
+```
+
+## Future improvements
+
+Contributions to improve the test suite are highly encouraged:
+
+- Automatic test runner framework
+- Expected output validation
+- Test coverage reporting
+- Performance regression testing
+- Integration tests
+- Error handling tests
+
+See [Contributing](/development/contributing) for information on submitting improvements.

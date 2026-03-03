@@ -1,0 +1,129 @@
+---
+title: File I/O
+description: Reading and writing files using the std/io module
+---
+
+Walrus provides file I/O capabilities through the `std/io` module. This example demonstrates reading and writing files using both convenience functions and handle-based operations.
+
+## Basic file operations
+
+The simplest way to work with files is using the convenience functions:
+
+```walrus
+import "std/io";
+
+// Write to a file
+io.write_file("hello.txt", "Hello, Walrus!");
+
+// Read from a file
+let content = io.read_file("hello.txt");
+println(content);
+```
+
+## How to run
+
+Save the code to a file called `file_io.walrus` and run it:
+
+```bash
+walrus file_io.walrus
+```
+
+## Expected output
+
+```
+Hello, Walrus!
+```
+
+## Handle-based operations
+
+For more control, especially with larger files or streaming operations, use file handles:
+
+```walrus
+import "std/io";
+
+// Write using handles
+let handle = io.file_open("data.txt", "w");
+io.file_write(handle, "Line 1\n");
+io.file_write(handle, "Line 2\n");
+io.file_write(handle, "Line 3\n");
+io.file_close(handle);
+
+// Read using handles
+let reader = io.file_open("data.txt", "r");
+let line = io.file_read_line(reader);
+while line != void {
+    println(line);
+    line = io.file_read_line(reader);
+}
+io.file_close(reader);
+```
+
+### Output
+
+```
+Line 1
+Line 2
+Line 3
+```
+
+## File existence check
+
+You can check if a file exists before reading:
+
+```walrus
+import "std/io";
+
+if io.file_exists("/tmp/test_walrus.txt") {
+    let content = io.read_file("/tmp/test_walrus.txt");
+    println("File contents: " + content);
+} else {
+    println("File does not exist!");
+}
+```
+
+## Complete example
+
+Here's a complete example that demonstrates all file operations:
+
+```walrus
+import "std/io";
+
+// Write a file
+io.write_file("/tmp/test_walrus.txt", "Hello from Walrus!");
+
+// Read it back
+let content = io.read_file("/tmp/test_walrus.txt");
+println(content);
+
+// Check if files exist
+println(io.file_exists("/tmp/test_walrus.txt"));  // true
+println(io.file_exists("/tmp/nonexistent_file.txt"));  // false
+```
+
+### Output
+
+```
+Hello from Walrus!
+true
+false
+```
+
+## Available functions
+
+| Function | Description |
+|----------|-------------|
+| `io.file_open(path, mode)` | Open a file, returns a handle. Modes: `"r"`, `"w"`, `"a"`, `"rw"` |
+| `io.file_read(handle)` | Read entire file contents as string |
+| `io.file_read_line(handle)` | Read a single line (returns `void` at EOF) |
+| `io.file_write(handle, content)` | Write string to file, returns bytes written |
+| `io.file_close(handle)` | Close a file handle |
+| `io.file_exists(path)` | Check if a file exists (returns bool) |
+| `io.read_file(path)` | Convenience: read entire file in one call |
+| `io.write_file(path, content)` | Convenience: write entire file in one call |
+
+## Key concepts
+
+- **Import statement**: Use `import "std/io"` to access file I/O functions
+- **File modes**: `"r"` for reading, `"w"` for writing, `"a"` for appending, `"rw"` for read-write
+- **Void type**: `file_read_line` returns `void` when reaching end of file
+- **Handle management**: Always close file handles when done

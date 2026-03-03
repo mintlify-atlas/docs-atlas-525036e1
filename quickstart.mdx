@@ -1,80 +1,518 @@
 ---
-title: "Quickstart"
-description: "Start building awesome documentation in minutes"
+title: Quickstart
+description: Write your first Walrus program and learn the basics
 ---
 
-## Get started in three steps
+## Hello, World!
 
-Get your documentation site running locally and make your first customization.
+Let's start with the classic "Hello, World!" program. Create a file named `hello.walrus`:
 
-### Step 1: Set up your local environment
+```walrus hello.walrus
+println("Hello, World!");
+```
 
-<AccordionGroup>
-  <Accordion icon="copy" title="Clone your docs locally">
-    During the onboarding process, you created a GitHub repository with your docs content if you didn't already have one. You can find a link to this repository in your [dashboard](https://dashboard.mintlify.com).
-    
-    To clone the repository locally so that you can make and preview changes to your docs, follow the [Cloning a repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) guide in the GitHub docs.
-  </Accordion>
-  <Accordion icon="rectangle-terminal" title="Start the preview server">
-    1. Install the Mintlify CLI: `npm i -g mint`
-    2. Navigate to your docs directory and run: `mint dev`
-    3. Open `http://localhost:3000` to see your docs live!
-    
-    <Tip>Your preview updates automatically as you edit files.</Tip>
-  </Accordion>
-</AccordionGroup>
+Run it with:
 
-### Step 2: Deploy your changes
+```bash
+walrus hello.walrus
+```
 
-<AccordionGroup>
-  <Accordion icon="github" title="Install our GitHub app">
-    Install the Mintlify GitHub app from your [dashboard](https://dashboard.mintlify.com/settings/organization/github-app).
-    
-    Our GitHub app automatically deploys your changes to your docs site, so you don't need to manage deployments yourself.
-</Accordion>
-<Accordion icon="palette" title="Update your site name and colors">
-    For a first change, let's update the name and colors of your docs site.
+Output:
+```
+Hello, World!
+```
 
-    1. Open `docs.json` in your editor.
-    2. Change the `"name"` field to your project name.
-    3. Update the `"colors"` to match your brand.
-    4. Save and see your changes instantly at `http://localhost:3000`.
+<Tip>
+  If you haven't installed Walrus yet, see the [installation guide](/installation).
+</Tip>
 
-    <Tip>Try changing the primary color to see an immediate difference!</Tip>
-  </Accordion>
-</AccordionGroup>
+## Variables and types
 
-### Step 3: Go live
+Walrus is dynamically typed and supports several data types:
 
-<Accordion icon="rocket" title="Publish your docs">
-  1. Commit and push your changes.
-  2. Your docs will update and be live in moments!
-</Accordion>
+```walrus variables.walrus
+// Numbers
+let integer = 42;
+let pi = 3.14159;
+
+// Strings
+let name = "Walrus";
+let greeting = "Hello";
+
+// Booleans
+let active = true;
+let done = false;
+
+// Collections
+let items = [1, 2, 3, 4, 5];
+let data = {"key": "value", "count": 10};
+let coordinates = (3, 4);
+let numbers = 0..10;
+
+println(f"Name: {name}");
+println(f"Items: {items}");
+```
+
+<Note>
+  Variables are declared with `let` and can hold any type of value. Walrus uses dynamic typing, so variables can be reassigned to different types.
+</Note>
+
+## Format strings
+
+Walrus supports format strings (f-strings) with embedded expressions:
+
+```walrus format.walrus
+let name = "Alice";
+let age = 30;
+let score = 95.5;
+
+// Basic interpolation
+println(f"Hello, {name}!");
+
+// Multiple expressions
+println(f"User: {name}, Age: {age}");
+
+// Arithmetic expressions
+println(f"Next year you'll be {age + 1}");
+
+// Complex expressions
+let items = [1, 2, 3];
+println(f"List has {len(items)} items: {items}");
+println(f"Score: {score * 100 / 100}%");
+```
+
+Output:
+```
+Hello, Alice!
+User: Alice, Age: 30
+Next year you'll be 31
+List has 3 items: [1, 2, 3]
+Score: 95.5%
+```
+
+## Functions
+
+Functions are defined using the `fn` keyword with the `: param` syntax:
+
+```walrus functions.walrus
+fn greet : name {
+    println(f"Hello, {name}!");
+}
+
+fn add : a, b {
+    return a + b;
+}
+
+fn factorial : n {
+    if n <= 1 {
+        return 1;
+    }
+    return n * factorial(n - 1);
+}
+
+// Call functions
+greet("World");
+let sum = add(5, 3);
+println(f"5 + 3 = {sum}");
+println(f"5! = {factorial(5)}");
+```
+
+Output:
+```
+Hello, World!
+5 + 3 = 8
+5! = 120
+```
+
+### Anonymous functions
+
+You can also create anonymous functions and assign them to variables:
+
+```walrus anonymous.walrus
+let square = : x {
+    return x * x;
+};
+
+let cube = : x {
+    return x * x * x;
+};
+
+println(f"7 squared = {square(7)}");
+println(f"3 cubed = {cube(3)}");
+```
+
+## Control flow
+
+### Conditionals
+
+```walrus conditionals.walrus
+let score = 85;
+
+if score >= 90 {
+    println("Grade: A");
+} else if score >= 80 {
+    println("Grade: B");
+} else if score >= 70 {
+    println("Grade: C");
+} else {
+    println("Grade: F");
+}
+```
+
+### Loops
+
+Walrus supports both `while` and `for` loops:
+
+```walrus loops.walrus
+// While loop
+let i = 0;
+while i < 5 {
+    println(f"Count: {i}");
+    i = i + 1;
+}
+
+// For loop with range
+for x in 0..5 {
+    println(f"Number: {x}");
+}
+
+// For loop with list
+for item in ["apple", "banana", "cherry"] {
+    println(f"Fruit: {item}");
+}
+
+// For loop with dictionary
+let person = {"name": "Alice", "age": 30};
+for key in person {
+    println(f"{key}: {person[key]}");
+}
+```
+
+### Break and continue
+
+```walrus break_continue.walrus
+// Find first number divisible by 7
+for n in 1..100 {
+    if n % 7 == 0 {
+        println(f"Found: {n}");
+        break;
+    }
+}
+
+// Print odd numbers only
+for n in 0..10 {
+    if n % 2 == 0 {
+        continue;
+    }
+    println(n);
+}
+```
+
+## Collections
+
+### Lists
+
+```walrus lists.walrus
+// Create a list
+let numbers = [1, 2, 3, 4, 5];
+
+// Access elements
+println(numbers[0]);  // 1
+println(numbers[-1]); // 5 (negative indexing)
+
+// Slice
+println(numbers[1..3]);  // [2, 3]
+
+// Modify
+numbers.push(6);
+println(numbers);  // [1, 2, 3, 4, 5, 6]
+
+// Iterate
+for num in numbers {
+    println(num);
+}
+
+// Length
+println(f"Length: {len(numbers)}");
+```
+
+### Dictionaries
+
+```walrus dictionaries.walrus
+// Create a dictionary
+let person = {
+    "name": "Alice",
+    "age": 30,
+    "city": "Seattle"
+};
+
+// Access elements
+println(person["name"]);  // Alice
+
+// Add/modify
+person["email"] = "alice@example.com";
+println(person);
+
+// Iterate over keys
+for key in person {
+    println(f"{key}: {person[key]}");
+}
+
+// Length
+println(f"Keys: {len(person)}");
+```
+
+## Built-in functions
+
+Walrus provides several built-in functions:
+
+| Function | Description |
+| --- | --- |
+| `println(x)` | Print value with newline |
+| `print(x)` | Print value without newline |
+| `len(x)` | Get length of string, list, or dict |
+| `str(x)` | Convert value to string |
+| `type(x)` | Get type name of a value |
+| `input(prompt)` | Read user input |
+
+```walrus builtins.walrus
+let items = [1, 2, 3, 4, 5];
+println(f"Type: {type(items)}");     // list
+println(f"Length: {len(items)}");   // 5
+println(f"String: {str(items)}");   // [1, 2, 3, 4, 5]
+
+let name = input("What's your name? ");
+println(f"Hello, {name}!");
+```
+
+## Example: FizzBuzz
+
+Let's put it all together with a classic FizzBuzz implementation:
+
+```walrus fizzbuzz.walrus
+for n in 1..101 {
+    let result = "";
+
+    if n % 3 == 0 {
+        result += "Fizz";
+    }
+
+    if n % 5 == 0 {
+        result += "Buzz";
+    }
+
+    if result == "" {
+        result = n;
+    }
+
+    println(result);
+}
+```
+
+Run it:
+```bash
+walrus fizzbuzz.walrus
+```
+
+Output:
+```
+1
+2
+Fizz
+4
+Buzz
+Fizz
+7
+8
+Fizz
+Buzz
+11
+Fizz
+13
+14
+FizzBuzz
+...
+```
+
+## Example: Fibonacci sequence
+
+Calculate Fibonacci numbers using recursion:
+
+```walrus fibonacci.walrus
+fn fib : n {
+    if n <= 1 {
+        return n;
+    }
+    return fib(n - 1) + fib(n - 2);
+}
+
+// Print first 10 Fibonacci numbers
+for i in 0..10 {
+    println(f"fib({i}) = {fib(i)}");
+}
+```
+
+Output:
+```
+fib(0) = 0
+fib(1) = 1
+fib(2) = 1
+fib(3) = 2
+fib(4) = 3
+fib(5) = 5
+fib(6) = 8
+fib(7) = 13
+fib(8) = 21
+fib(9) = 34
+```
+
+## Using the REPL
+
+Walrus includes an interactive REPL (Read-Eval-Print Loop) for experimenting:
+
+```bash
+walrus
+```
+
+Try some expressions:
+
+```
+Walrus REPL
+>>> let x = 42
+>>> x * 2
+84
+>>> fn double : n { return n * 2; }
+>>> double(21)
+42
+>>> [1, 2, 3].push(4)
+>>> [1, 2, 3, 4]
+```
+
+<Tip>
+  The REPL is great for testing small snippets of code and exploring language features interactively.
+</Tip>
+
+## Importing the standard library
+
+Walrus provides a standard library with modules for file I/O, system operations, and math utilities:
+
+```walrus import.walrus
+import "std/io";
+import "std/sys";
+import "std/math";
+
+// File I/O
+io.write_file("hello.txt", "Hello, Walrus!");
+let content = io.read_file("hello.txt");
+println(content);
+
+// System operations
+let args = sys.args();
+println(f"Program: {args[0]}");
+
+// Math utilities
+println(f"π = {math.pi()}");
+println(f"√49 = {math.sqrt(49)}");
+println(f"2^10 = {math.pow(2, 10)}");
+```
+
+<Note>
+  The `import` statement returns a dictionary of functions. Access module functions using dot notation like `io.write_file()` or `math.sqrt()`.
+</Note>
 
 ## Next steps
 
-Now that you have your docs running, explore these key features:
+Now that you've learned the basics, explore more advanced topics:
 
 <CardGroup cols={2}>
-
-<Card title="Write Content" icon="pen-to-square" href="/essentials/markdown">
-  Learn MDX syntax and start writing your documentation.
-</Card>
-
-<Card title="Customize style" icon="palette" href="/essentials/settings">
-  Make your docs match your brand perfectly.
-</Card>
-
-<Card title="Add code examples" icon="square-code" href="/essentials/code">
-  Include syntax-highlighted code blocks.
-</Card>
-
-<Card title="API documentation" icon="code" href="/api-reference/introduction">
-  Auto-generate API docs from OpenAPI specs.
-</Card>
-
+  <Card
+    title="Language reference"
+    icon="book-open"
+    href="/language/syntax"
+  >
+    Deep dive into Walrus syntax and language features
+  </Card>
+  <Card
+    title="Standard library"
+    icon="boxes-stacked"
+    href="/stdlib/overview"
+  >
+    Explore the full standard library API
+  </Card>
+  <Card
+    title="Structs and OOP"
+    icon="cubes"
+    href="/language/structs"
+  >
+    Learn about structs and object-oriented programming
+  </Card>
+  <Card
+    title="JIT compilation"
+    icon="bolt"
+    href="/advanced/jit-compilation"
+  >
+    Speed up hot loops with JIT compilation
+  </Card>
 </CardGroup>
 
-<Note>
-  **Need help?** See our [full documentation](https://mintlify.com/docs) or join our [community](https://mintlify.com/community).
-</Note>
+## Additional examples
+
+<Accordion title="Quicksort implementation">
+  ```walrus
+  fn quicksort : arr {
+      if len(arr) <= 1 {
+          return arr;
+      }
+
+      let pivot = arr[0];
+      let less = [];
+      let equal = [];
+      let greater = [];
+
+      for x in arr {
+          if x < pivot {
+              less.push(x);
+          } else if x == pivot {
+              equal.push(x);
+          } else {
+              greater.push(x);
+          }
+      }
+
+      return quicksort(less) + equal + quicksort(greater);
+  }
+
+  let unsorted = [64, 34, 25, 12, 22, 11, 90, 88];
+  let sorted = quicksort(unsorted);
+  println(sorted);
+  ```
+</Accordion>
+
+<Accordion title="Struct example">
+  ```walrus
+  struct Point {
+      fn new : x, y {
+          return {"x": x, "y": y};
+      }
+
+      fn distance : p1, p2 {
+          let dx = p1["x"] - p2["x"];
+          let dy = p1["y"] - p2["y"];
+          return (dx * dx + dy * dy) ** 0.5;
+      }
+
+      fn midpoint : p1, p2 {
+          let mx = (p1["x"] + p2["x"]) / 2;
+          let my = (p1["y"] + p2["y"]) / 2;
+          return Point.new(mx, my);
+      }
+  }
+
+  let p1 = Point.new(0, 0);
+  let p2 = Point.new(6, 8);
+  let mid = Point.midpoint(p1, p2);
+
+  println(f"Distance: {Point.distance(p1, p2)}");  // 10.0
+  println(f"Midpoint: ({mid[\"x\"]}, {mid[\"y\"]})");  // (3, 4)
+  ```
+</Accordion>

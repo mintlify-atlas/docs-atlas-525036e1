@@ -1,0 +1,294 @@
+---
+title: Contributing
+description: Guidelines for contributing to the Walrus programming language project
+---
+
+## Welcome contributors
+
+Contributions to Walrus are welcome and encouraged! Whether you're fixing bugs, adding features, improving documentation, or expanding the test suite, your help is appreciated.
+
+## Areas of interest
+
+There are many ways to contribute to Walrus:
+
+### Standard library expansion
+
+The standard library is still growing. Potential additions:
+
+- **String utilities** - Advanced string manipulation functions
+- **Collections** - Set operations, advanced list/dict methods
+- **Networking** - HTTP client, socket support
+- **JSON/serialization** - Parse and generate JSON
+- **Regular expressions** - Pattern matching support
+- **Time/date** - DateTime handling and formatting
+
+### Performance optimizations
+
+Help make Walrus faster:
+
+- **Compiler optimizations** - Constant folding, dead code elimination
+- **VM improvements** - Faster bytecode dispatch, specialized opcodes
+- **JIT enhancements** - Support more loop patterns, function inlining
+- **Memory efficiency** - Reduce allocations, improve GC heuristics
+
+### Language features
+
+New language capabilities:
+
+- **Error handling** - Exception system improvements
+- **Type annotations** - Optional static typing
+- **Pattern matching** - Match expressions
+- **Async/await** - Asynchronous programming support
+- **Macros** - Compile-time code generation
+
+### Documentation improvements
+
+Better documentation helps everyone:
+
+- **API documentation** - Complete standard library docs
+- **Tutorials** - Beginner-friendly guides
+- **Examples** - Real-world use cases
+- **Reference** - Comprehensive language specification
+
+### Testing and quality
+
+Improve code quality:
+
+- **Test coverage** - Add tests for untested features
+- **Test framework** - Automated test runner
+- **Benchmarks** - Additional performance comparisons
+- **Fuzz testing** - Find edge cases and crashes
+
+## Getting started
+
+<Steps>
+  <Step title="Check the issue tracker">
+    Visit the [GitHub issue tracker](https://github.com/sb2bg/walrus/issues) to find:
+
+    - Open bugs to fix
+    - Feature requests to implement
+    - Good first issues for newcomers
+  </Step>
+
+  <Step title="Fork and clone">
+    ```bash
+    # Fork the repository on GitHub, then:
+    git clone https://github.com/YOUR_USERNAME/walrus.git
+    cd walrus
+    ```
+  </Step>
+
+  <Step title="Build and test">
+    Ensure you can build the project:
+
+    ```bash
+    cargo build --release
+    cargo test
+    ```
+  </Step>
+
+  <Step title="Create a branch">
+    ```bash
+    git checkout -b feature/my-contribution
+    ```
+  </Step>
+</Steps>
+
+## Development workflow
+
+### Making changes
+
+1. **Write code** - Implement your feature or fix
+2. **Test locally** - Verify your changes work correctly
+3. **Add tests** - Include tests for new functionality
+4. **Update docs** - Document new features or changes
+5. **Run benchmarks** - Check for performance regressions
+
+### Code style
+
+Walrus follows standard Rust conventions:
+
+- Run `cargo fmt` to format code
+- Run `cargo clippy` to check for common issues
+- Follow Rust naming conventions
+- Add comments for complex logic
+
+### Testing your changes
+
+```bash
+# Run the interpreter
+cargo run -- examples/showcase.walrus
+
+# Test specific features
+cargo run -- your_test.walrus
+
+# Run in different modes
+cargo run -- your_test.walrus -c  # Compiled (bytecode VM)
+cargo run -- your_test.walrus -i  # Interpreted (tree-walking)
+```
+
+### Benchmarking
+
+If your changes affect performance:
+
+```bash
+cd benchmarks
+./run_benchmarks.sh
+```
+
+Compare results before and after your changes.
+
+## Submitting changes
+
+<Steps>
+  <Step title="Commit your changes">
+    Write clear, descriptive commit messages:
+
+    ```bash
+    git add .
+    git commit -m "Add string split function to std/string module"
+    ```
+  </Step>
+
+  <Step title="Push to your fork">
+    ```bash
+    git push origin feature/my-contribution
+    ```
+  </Step>
+
+  <Step title="Create a pull request">
+    - Go to the [Walrus repository](https://github.com/sb2bg/walrus)
+    - Click "New Pull Request"
+    - Select your fork and branch
+    - Describe your changes clearly
+    - Reference any related issues
+  </Step>
+
+  <Step title="Respond to feedback">
+    - Address reviewer comments
+    - Make requested changes
+    - Push updates to your branch
+  </Step>
+</Steps>
+
+## Pull request guidelines
+
+### Good pull requests
+
+<Check>Focus on a single feature or fix</Check>
+<Check>Include tests for new functionality</Check>
+<Check>Update documentation as needed</Check>
+<Check>Follow existing code style</Check>
+<Check>Have clear commit messages</Check>
+
+### PR description template
+
+```markdown
+## Description
+Brief description of what this PR does.
+
+## Changes
+- List of specific changes made
+- Each change on its own line
+
+## Testing
+How did you test these changes?
+
+## Related Issues
+Fixes #123
+Relates to #456
+```
+
+## Architecture overview
+
+Understanding the codebase structure:
+
+### Key modules
+
+| Module | Purpose |
+| --- | --- |
+| `src/ast.rs` | Abstract syntax tree definitions |
+| `src/grammar.lalrpop` | Parser grammar |
+| `src/interpreter.rs` | Tree-walking interpreter |
+| `src/compiler.rs` | Bytecode compiler |
+| `src/vm.rs` | Bytecode virtual machine |
+| `src/gc.rs` | Garbage collector |
+| `src/heap.rs` | Heap and memory management |
+| `src/stdlib/` | Standard library modules |
+| `src/lsp_support.rs` | LSP semantic analysis |
+| `src/bin/walrus-lsp.rs` | Language server |
+
+### Execution flow
+
+**Interpreted mode:**
+```
+Source → Parser → AST → Interpreter → Result
+```
+
+**Compiled mode:**
+```
+Source → Parser → AST → Compiler → Bytecode → VM → Result
+```
+
+**JIT mode:**
+```
+Source → Parser → AST → Compiler → Bytecode → VM → JIT → Native Code
+```
+
+## Common contribution patterns
+
+### Adding a built-in function
+
+1. Add the function to `src/interpreter.rs` or `src/vm.rs`
+2. Update builtin dispatch in the appropriate module
+3. Add hover docs to `src/bin/walrus-lsp.rs`
+4. Write tests in `tests/`
+5. Document in README.md or docs
+
+### Adding a standard library module
+
+1. Create a new file in `src/stdlib/`
+2. Implement module functions
+3. Register module in the import system
+4. Add examples and documentation
+5. Write comprehensive tests
+
+### Adding a language feature
+
+1. Update grammar in `src/grammar.lalrpop`
+2. Add AST nodes in `src/ast.rs`
+3. Implement in interpreter (`src/interpreter.rs`)
+4. Implement in compiler (`src/compiler.rs`)
+5. Implement in VM (`src/vm.rs`)
+6. Update LSP if needed (`src/lsp_support.rs`)
+7. Add tests and documentation
+
+## Community
+
+### Communication
+
+- **GitHub Issues** - Bug reports and feature requests
+- **Pull Requests** - Code contributions and reviews
+- **Discussions** - Design discussions and questions
+
+### Code of conduct
+
+- Be respectful and welcoming
+- Provide constructive feedback
+- Focus on what's best for the project
+- Help newcomers get started
+
+## License
+
+Walrus is licensed under the MIT License. By contributing, you agree that your contributions will be licensed under the same license.
+
+## Questions?
+
+If you have questions about contributing:
+
+1. Check existing issues and discussions
+2. Review this contributing guide
+3. Open a new issue with the "question" label
+4. Reach out to maintainers
+
+**Happy coding with Walrus! 🦭**

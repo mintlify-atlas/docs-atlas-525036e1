@@ -1,0 +1,233 @@
+---
+title: CLI commands
+description: Complete reference for all Walrus command-line flags and options
+---
+
+The Walrus CLI provides multiple execution modes and debugging capabilities for running your Walrus programs.
+
+## Basic usage
+
+```bash
+# Run a script file (bytecode VM mode)
+walrus file.walrus
+
+# Start interactive REPL
+walrus
+
+# Show help
+walrus --help
+```
+
+## Command-line flags
+
+### Execution modes
+
+<ParamField path="-c, --compile" type="flag">
+  Compile the script to bytecode and execute with the VM (default mode)
+  
+  ```bash
+  walrus --compile program.walrus
+  ```
+  
+  This is the default execution mode when a file is provided. The bytecode VM offers better performance than the tree-walking interpreter.
+</ParamField>
+
+<ParamField path="-i, --interpreted" type="flag">
+  Run with the tree-walking interpreter instead of the bytecode VM
+  
+  ```bash
+  walrus --interpreted program.walrus
+  ```
+  
+  Useful for development and debugging. Cannot be combined with `--disassemble`.
+</ParamField>
+
+<ParamField path="--disassemble" type="flag">
+  Print the bytecode disassembly without executing
+  
+  ```bash
+  walrus --disassemble program.walrus
+  ```
+  
+  Displays the compiled bytecode instructions for analyzing program structure. Cannot be combined with `--interpreted`.
+</ParamField>
+
+### Debugging and logging
+
+<ParamField path="-d, --debug" type="flag">
+  Enable debug-level logging
+  
+  ```bash
+  walrus --debug program.walrus
+  ```
+  
+  Shows detailed internal information during execution. Sets log level to `Debug`.
+</ParamField>
+
+<ParamField path="--debugger" type="flag">
+  Enable interactive debugger mode
+  
+  ```bash
+  walrus --debugger program.walrus
+  ```
+  
+  Starts the program in debugger mode with step-through execution, breakpoints, and variable inspection. See [Debugging](/cli/debugging) for full debugger documentation.
+</ParamField>
+
+<ParamField path="-v, --verbose" type="flag">
+  Enable verbose output
+  
+  ```bash
+  walrus --verbose program.walrus
+  ```
+  
+  Provides additional information during execution.
+</ParamField>
+
+<ParamField path="-t, --trace" type="flag">
+  Enable trace-level logging (most detailed)
+  
+  ```bash
+  walrus --trace program.walrus
+  ```
+  
+  Shows extremely detailed trace information for deep debugging. Sets log level to `Trace`.
+</ParamField>
+
+### JIT compilation
+
+These flags require the `jit` feature to be enabled during compilation.
+
+<ParamField path="--jit" type="flag">
+  Enable JIT compilation of hot code paths
+  
+  ```bash
+  walrus --jit program.walrus
+  ```
+  
+  Requires Walrus to be built with `--features jit`. Hot loops are compiled to native machine code using Cranelift after 1000 iterations, providing significant performance improvements for numeric computations.
+</ParamField>
+
+<ParamField path="--jit-stats" type="flag">
+  Show JIT profiling statistics after execution
+  
+  ```bash
+  walrus --jit --jit-stats program.walrus
+  ```
+  
+  Displays hot-spot statistics, type profiles, and JIT compilation metrics.
+  
+  Example output:
+  ```
+  Hot-spot Statistics:
+    Total tracked regions: 3
+    Hot loops: 1
+    Hot functions: 1
+    JIT compiled regions: 1
+    Hottest spot: loop@5..5 (402000x)
+
+  Type Profile: 4 locations observed
+  JIT Stats: 1 functions compiled
+  ```
+</ParamField>
+
+<ParamField path="--no-jit-profile" type="flag">
+  Disable JIT profiling for baseline benchmarking
+  
+  ```bash
+  walrus --no-jit-profile program.walrus
+  ```
+  
+  Turns off profiling overhead to measure baseline VM performance without hot-spot detection.
+</ParamField>
+
+## Flag combinations
+
+### Valid combinations
+
+```bash
+# Debug mode with JIT stats
+walrus --debug --jit --jit-stats program.walrus
+
+# Disassemble with debug logging
+walrus --disassemble --debug program.walrus
+
+# Interactive debugger with trace logging
+walrus --debugger --trace program.walrus
+```
+
+### Invalid combinations
+
+Some flags cannot be used together:
+
+| Flag 1 | Flag 2 | Reason |
+|--------|--------|--------|
+| `--interpreted` | `--disassemble` | Interpreter doesn't use bytecode |
+
+Attempting invalid combinations will result in an error:
+
+```bash
+$ walrus --interpreted --disassemble program.walrus
+[ERROR] Invalid argument combination: --interpreted and --disassemble
+```
+
+## File argument
+
+<ParamField path="file" type="path">
+  The script file to execute (optional)
+  
+  ```bash
+  walrus script.walrus
+  ```
+  
+  If no file is provided, Walrus starts in REPL mode. The file should contain valid Walrus source code with a `.walrus` extension.
+</ParamField>
+
+## Exit codes
+
+The Walrus CLI uses standard exit codes:
+
+| Code | Meaning |
+|------|----------|
+| `0` | Successful execution |
+| `1` | Runtime error or exception |
+| Custom | Program-specific (via `sys.exit(code)`) |
+
+## Examples
+
+### Basic execution
+
+```bash
+# Run a program with default settings
+walrus fibonacci.walrus
+```
+
+### Performance optimization
+
+```bash
+# Enable JIT for maximum performance
+walrus --jit benchmark.walrus
+
+# Profile and optimize hot code
+walrus --jit --jit-stats compute.walrus
+```
+
+### Development and debugging
+
+```bash
+# Inspect bytecode
+walrus --disassemble app.walrus
+
+# Debug with detailed logging
+walrus --debug --verbose problem.walrus
+
+# Interactive debugging
+walrus --debugger app.walrus
+```
+
+### Interpreter mode
+
+```bash
+# Use tree-walking interpreter for development
+walrus --interpreted development.walrus
+```

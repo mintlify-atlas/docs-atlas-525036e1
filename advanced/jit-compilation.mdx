@@ -1,0 +1,332 @@
+---
+title: JIT compilation
+description: Optional Cranelift-powered JIT for hot integer range loops with 68x speedups
+---
+
+Walrus includes an optional **Just-In-Time (JIT) compiler** powered by [Cranelift](https://cranelift.dev/) that compiles hot bytecode regions to native machine code. When enabled, the JIT can provide dramatic speedups for tight loops.
+
+## Performance
+
+| Benchmark | Interpreter | JIT | Speedup |
+|-----------|-------------|-----|----------|
+| Sum loop (10K × sum(0..1000)) | 0.68s | 0.01s | **68x** |
+
+## Building with JIT support
+
+The JIT compiler requires the `jit` feature flag:
+
+```bash
+# Build with JIT enabled
+cargo build --release --features jit
+
+# Or add to Cargo.toml
+[features]
+jit = ["cranelift-codegen", "cranelift-frontend", 
+       "cranelift-jit", "cranelift-module", "cranelift-native"]
+```
+
+## Running with JIT
+
+Enable JIT compilation at runtime:
+
+```bash
+# Run with JIT enabled
+walrus program.walrus --jit
+
+# Show JIT profiling statistics
+walrus program.walrus --jit --jit-stats
+
+# Disable profiling (baseline comparison)
+walrus program.walrus --no-jit-profile
+```
+
+## Hot-spot detection
+
+The VM profiles execution to identify "hot" code regions suitable for JIT compilation (`src/jit/hotspot.rs`):
+
+- **Loop threshold**: 1000 iterations
+- **Function threshold**: 100 calls
+- **Type stability**: Monomorphic operations only
+
+When a loop becomes hot, the JIT compiler analyzes and compiles it to native code.
+
+### How detection works
+
+1. The compiler registers loops during bytecode generation
+2. The VM tracks iteration counts at loop headers
+3. When count exceeds threshold, mark as "hot"
+4. Analyze bytecode for JIT compatibility
+5. Compile to native code if suitable
+
+```rust
+// From src/jit/hotspot.rs
+pub const LOOP_HOT_THRESHOLD: u32 = 1000;
+pub const FUNCTION_HOT_THRESHOLD: u32 = 100;
+```
+
+## JIT-compatible patterns
+
+The JIT compiler currently supports **integer range loops** with specific patterns:
+
+### Sum accumulation
+
+```walrus
+let sum = 0;
+for i in 0..n {
+    sum = sum + i;
+}
+```
+
+Compiles to optimized native loop with integer addition.
+
+### Count iterations
+
+```walrus
+let count = 0;
+for i in 0..n {
+    count = count + 1;
+}
+```
+
+### Simple printing
+
+```walrus
+for i in 0..n {
+    println(i);
+}
+```
+
+Print operations call back to Rust via external functions.
+
+### Combined patterns
+
+```walrus
+let sum = 0;
+for i in 0..n {
+    sum = sum + i;
+    println(i);
+}
+```
+
+Accumulation and printing can be combined.
+
+## Not JIT-compatible
+
+The following patterns fall back to the interpreter:
+
+### Function calls
+
+```walrus
+for i in 0..n {
+    result = compute(i);  // Contains Call opcode
+}
+```
+
+### Multiple prints per iteration
+
+```walrus
+for i in 0..n {
+    print(i);      // Multiple prints not supported
+    print(" ");
+}
+```
+
+### Complex operations
+
+```walrus
+for i in 0..n {
+    list.push(i);  // Method calls not supported
+}
+```
+
+### String operations
+
+```walrus
+for i in 0..n {
+    result = result + "x";  // String concat not supported
+}
+```
+
+## Compilation architecture
+
+The JIT compilation pipeline (`src/jit/compiler.rs`):
+
+### 1. Bytecode analysis
+
+Analyze the loop body to determine the computation pattern:
+
+```rust
+fn analyze_int_range_loop(
+    instructions: &InstructionSet,
+    header_ip: usize,
+    exit_ip: usize,
+) -> JitResult<LoopAnalysis>
+```
+
+Detects:
+
+- Accumulator variable
+- Arithmetic operations (add, subtract, multiply)
+- Print/println operations
+- Invalid operations (function calls, etc.)
+
+### 2. Cranelift IR generation
+
+Translate bytecode to Cranelift intermediate representation:
+
+```rust
+// Simplified example
+let loop_header = builder.create_block();
+builder.append_block_param(loop_header, types::I64); // i
+builder.append_block_param(loop_header, types::I64); // acc
+
+let cond = builder.ins().icmp(IntCC::SignedLessThan, i, end);
+builder.ins().brif(cond, loop_body, &[], loop_exit, &[acc]);
+
+// Loop body: acc = acc + i
+let new_acc = builder.ins().iadd(acc, i);
+let next_i = builder.ins().iadd(i, one);
+builder.ins().jump(loop_header, &[next_i, new_acc]);
+```
+
+### 3. Native code compilation
+
+Cranelift compiles the IR to machine code optimized for the target CPU:
+
+```rust
+module.define_function(func_id, &mut ctx)?;
+module.finalize_definitions()?;
+let func_ptr = module.get_finalized_function(func_id);
+```
+
+### 4. Execution
+
+The VM calls the JIT-compiled function directly:
+
+```rust
+let result = unsafe {
+    let func: IntRangeAccumFn = mem::transmute(func_ptr);
+    func(start, end, initial_acc)
+};
+```
+
+Return values are stored back to local variables.
+
+## External callbacks
+
+Print operations in JIT-compiled code call back to Rust:
+
+```rust
+extern "C" fn jit_print_int(value: i64) {
+    print!("{}", value);
+}
+
+extern "C" fn jit_println_int(value: i64) {
+    println!("{}", value);
+}
+```
+
+These are declared as external symbols in the JIT module:
+
+```rust
+builder.symbol("jit_print_int", jit_print_int as *const u8);
+builder.symbol("jit_println_int", jit_println_int as *const u8);
+```
+
+Cranelift emits call instructions to these functions.
+
+## Type profiling
+
+The VM tracks runtime types at key program points (`src/jit/types.rs`):
+
+```rust
+pub struct TypeProfile {
+    observations: FxHashMap<usize, TypeFeedback>,
+}
+
+pub struct TypeFeedback {
+    types: FxHashMap<WalrusType, u32>,  // Type -> count
+}
+```
+
+Type stability is checked before compilation:
+
+```rust
+pub fn is_monomorphic(&self) -> bool {
+    self.types.len() == 1  // Only one type observed
+}
+```
+
+Polymorphic code (multiple types at same location) is not JIT compiled.
+
+## JIT statistics
+
+With `--jit-stats`, the VM prints compilation statistics:
+
+```
+Hot-spot Statistics:
+  Total tracked regions: 3
+  Hot loops: 1
+  Hot functions: 1
+  JIT compiled regions: 1
+  Hottest spot: loop@5..5 (402000x)
+
+Type Profile: 4 locations observed
+JIT Stats: 1 functions compiled
+```
+
+## Optimizations
+
+The JIT compiler applies several optimizations:
+
+### Register allocation
+
+Cranelift's register allocator keeps loop variables in CPU registers, avoiding memory loads.
+
+### Loop unrolling
+
+Cranelift may unroll small loop bodies for better instruction-level parallelism.
+
+### Constant folding
+
+Constants in the loop are folded at compile time.
+
+### Inlining
+
+External calls to print functions are inlined when beneficial.
+
+## Limitations
+
+**Current JIT implementation supports**:
+
+- Integer range loops only (`for i in start..end`)
+- Integer arithmetic (add, subtract, multiply)
+- Integer comparisons
+- Print/println with integers
+- Monomorphic types (single type per operation)
+
+**Not yet supported**:
+
+- Iterator-based loops (`for x in list`)
+- Floating-point operations
+- String operations
+- Function calls
+- Method calls
+- Polymorphic loops (mixed types)
+- Nested loops (outer loop JIT only)
+
+## Future enhancements
+
+- **Polymorphic inlining**: Generate specialized code for top-N types
+- **Escape analysis**: Allocate short-lived objects on stack
+- **Function inlining**: Inline small function calls
+- **SIMD**: Use vector instructions for data-parallel operations
+- **Floating-point support**: JIT compile float loops
+- **Multi-tier compilation**: Quick compile hot code, optimize later
+
+## Source references
+
+- JIT compiler: `src/jit/compiler.rs`
+- Hot-spot detector: `src/jit/hotspot.rs`
+- Type profiling: `src/jit/types.rs`
+- VM integration: `src/vm/mod.rs:595` (try_jit_range_loop)

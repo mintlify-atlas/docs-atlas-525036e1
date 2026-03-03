@@ -1,0 +1,404 @@
+---
+title: Built-in functions
+description: Core built-in functions available in Walrus without importing
+---
+
+Walrus provides a set of built-in functions that are always available without importing any modules. These functions cover essential operations like getting the length of collections, type conversion, user input, and garbage collection control.
+
+## Overview
+
+Built-in functions are globally available and don't require any import statement:
+
+```walrus
+// No import needed - built-ins are always available
+let count = len([1, 2, 3]);
+let name = str(42);
+let kind = type(true);
+```
+
+## Functions
+
+### len
+
+Returns the length of a string, list, or dictionary.
+
+```walrus
+let length = len(value);
+```
+
+<ParamField path="value" type="string | list | dict" required>
+  The value to get the length of
+</ParamField>
+
+<ResponseField name="return" type="int">
+  Number of elements in the collection:
+  - For strings: number of characters
+  - For lists: number of elements
+  - For dictionaries: number of key-value pairs
+</ResponseField>
+
+**Example:**
+
+```walrus
+// String length
+let text = "Hello";
+println(len(text));  // 5
+
+// List length
+let items = [1, 2, 3, 4, 5];
+println(len(items));  // 5
+
+// Dictionary length
+let data = {"a": 1, "b": 2, "c": 3};
+println(len(data));  // 3
+```
+
+### str
+
+Converts any value to its string representation.
+
+```walrus
+let text = str(value);
+```
+
+<ParamField path="value" type="any" required>
+  The value to convert to a string
+</ParamField>
+
+<ResponseField name="return" type="string">
+  String representation of the value
+</ResponseField>
+
+**Example:**
+
+```walrus
+// Numbers
+println(str(42));      // "42"
+println(str(3.14));    // "3.14"
+
+// Booleans
+println(str(true));    // "true"
+println(str(false));   // "false"
+
+// Collections
+println(str([1, 2]));  // "[1, 2]"
+println(str({"x": 5})); // "{\"x\": 5}"
+
+// void
+println(str(void));    // "void"
+```
+
+### type
+
+Returns the runtime type name of a value as a string.
+
+```walrus
+let typename = type(value);
+```
+
+<ParamField path="value" type="any" required>
+  The value to get the type of
+</ParamField>
+
+<ResponseField name="return" type="string">
+  Type name as a string. Possible values:
+  - `"int"` - Integer
+  - `"float"` - Floating-point number
+  - `"bool"` - Boolean
+  - `"string"` - String
+  - `"list"` - List
+  - `"dict"` - Dictionary
+  - `"tuple"` - Tuple
+  - `"function"` - Function
+  - `"void"` - Void/null value
+  - `"range"` - Range object
+  - `"iterator"` - Iterator
+  - `"struct"` - Struct instance
+</ResponseField>
+
+**Example:**
+
+```walrus
+println(type(42));           // "int"
+println(type(3.14));         // "float"
+println(type(true));         // "bool"
+println(type("hello"));      // "string"
+println(type([1, 2, 3]));    // "list"
+println(type({"a": 1}));     // "dict"
+println(type((1, 2)));       // "tuple"
+println(type(void));         // "void"
+
+// Type checking
+let value = [1, 2, 3];
+if type(value) == "list" {
+    println(f"List has {len(value)} items");
+}
+```
+
+### input
+
+Reads user input from stdin with an optional prompt.
+
+```walrus
+let text = input(prompt);
+```
+
+<ParamField path="prompt" type="string" required>
+  Prompt text to display to the user
+</ParamField>
+
+<ResponseField name="return" type="string">
+  The user's input as a string (without trailing newline)
+</ResponseField>
+
+**Example:**
+
+```walrus
+// Simple input
+let name = input("Enter your name: ");
+println(f"Hello, {name}!");
+
+// Input with validation
+let age_str = input("Enter your age: ");
+// Note: Convert to int if needed (Walrus doesn't have int() builtin)
+
+// Interactive loop
+while true {
+    let command = input("Command: ");
+    if command == "quit" {
+        break;
+    }
+    println(f"You entered: {command}");
+}
+```
+
+### __gc__
+
+Manually triggers garbage collection. This forces the garbage collector to run immediately, freeing any unreachable heap objects.
+
+```walrus
+__gc__();
+```
+
+<ResponseField name="return" type="void">
+  No return value
+</ResponseField>
+
+**Example:**
+
+```walrus
+// Create some temporary objects
+for i in 0..1000 {
+    let temp = [i, i * 2, i * 3];
+}
+
+// Force garbage collection
+__gc__();
+println("Garbage collection complete");
+```
+
+### __heap_stats__
+
+Returns detailed heap statistics as a dictionary.
+
+```walrus
+let stats = __heap_stats__();
+```
+
+<ResponseField name="return" type="dict">
+  Dictionary containing heap statistics with the following keys:
+  - `"total_bytes_freed"` (int) - Total bytes freed by GC
+  - `"collection_count"` (int) - Number of GC runs
+  - `"allocation_count"` (int) - Current allocation count
+  - `"estimated_bytes"` (int) - Estimated heap usage in bytes
+  - Additional keys for object counts by type (lists, dicts, functions, etc.)
+</ResponseField>
+
+**Example:**
+
+```walrus
+let stats = __heap_stats__();
+println("Heap Statistics:");
+println(f"  Allocations: {stats[\"allocation_count\"]}");
+println(f"  Estimated bytes: {stats[\"estimated_bytes\"]}");
+println(f"  GC runs: {stats[\"collection_count\"]}");
+println(f"  Total freed: {stats[\"total_bytes_freed\"]} bytes");
+```
+
+### __gc_threshold__
+
+Configures the garbage collection allocation threshold. GC will run when the allocation count exceeds this threshold.
+
+```walrus
+__gc_threshold__(threshold);
+```
+
+<ParamField path="threshold" type="int" required>
+  New allocation threshold for triggering GC. Default is 1024.
+</ParamField>
+
+<ResponseField name="return" type="void">
+  No return value
+</ResponseField>
+
+**Example:**
+
+```walrus
+// Set a higher threshold for better performance
+// (at the cost of higher memory usage)
+__gc_threshold__(10000);
+
+println("GC threshold set to 10,000 allocations");
+
+// Create many objects
+for i in 0..5000 {
+    let data = [i, i * 2, i * 3];
+}
+
+// Check if GC ran
+let stats = __heap_stats__();
+println(f"GC ran {stats[\"collection_count\"]} times");
+```
+
+## Usage patterns
+
+### Collection validation
+
+```walrus
+let items = [1, 2, 3, 4, 5];
+
+if len(items) == 0 {
+    println("List is empty");
+} else if len(items) < 5 {
+    println("List has fewer than 5 items");
+} else {
+    println(f"List has {len(items)} items");
+}
+```
+
+### Type-based dispatch
+
+```walrus
+fn describe : value {
+    let t = type(value);
+    
+    if t == "int" {
+        return f"Integer: {value}";
+    } else if t == "float" {
+        return f"Float: {value}";
+    } else if t == "string" {
+        return f"String with {len(value)} characters";
+    } else if t == "list" {
+        return f"List with {len(value)} elements";
+    } else {
+        return f"Type: {t}";
+    }
+}
+
+println(describe(42));           // "Integer: 42"
+println(describe("hello"));      // "String with 5 characters"
+println(describe([1, 2, 3]));    // "List with 3 elements"
+```
+
+### Interactive programs
+
+```walrus
+println("Calculator");
+while true {
+    let expr = input("Enter expression (or 'quit'): ");
+    
+    if expr == "quit" {
+        break;
+    }
+    
+    // Process expression...
+    println(f"You entered: {expr}");
+}
+```
+
+### Memory monitoring
+
+```walrus
+// Monitor memory during heavy operations
+fn create_data : count {
+    let stats_before = __heap_stats__();
+    
+    let data = [];
+    for i in 0..count {
+        data.push([i, i * 2, i * 3]);
+    }
+    
+    let stats_after = __heap_stats__();
+    let allocated = stats_after["estimated_bytes"] - stats_before["estimated_bytes"];
+    
+    println(f"Created {count} items");
+    println(f"Memory used: ~{allocated} bytes");
+    
+    return data;
+}
+
+let data = create_data(1000);
+
+// Clean up
+__gc__();
+let final_stats = __heap_stats__();
+println(f"After GC: {final_stats[\"estimated_bytes\"]} bytes");
+```
+
+### Tuning GC performance
+
+```walrus
+// For applications creating many short-lived objects,
+// increase the threshold to reduce GC frequency
+__gc_threshold__(5000);
+
+let results = [];
+for i in 0..10000 {
+    let temp = [i, i * 2, i * 3];
+    // Only keep even sums
+    if (i + i * 2 + i * 3) % 2 == 0 {
+        results.push(temp);
+    }
+}
+
+println(f"Found {len(results)} matching items");
+
+// Check GC activity
+let stats = __heap_stats__();
+println(f"GC ran {stats[\"collection_count\"]} times");
+```
+
+## String conversion reference
+
+The `str()` function converts values using these rules:
+
+| Type | Example Input | Example Output |
+| ---- | ------------- | -------------- |
+| int | `42` | `"42"` |
+| float | `3.14` | `"3.14"` |
+| bool | `true` | `"true"` |
+| string | `"hello"` | `"hello"` |
+| list | `[1, 2, 3]` | `"[1, 2, 3]"` |
+| dict | `{"a": 1}` | `"{\"a\": 1}"` |
+| tuple | `(1, 2)` | `"(1, 2)"` |
+| void | `void` | `"void"` |
+| function | `fn() {...}` | `"<function>"` |
+
+## Type names reference
+
+The `type()` function returns these type names:
+
+| Type | Returned String | Description |
+| ---- | --------------- | ----------- |
+| Integer | `"int"` | 64-bit signed integer |
+| Float | `"float"` | 64-bit floating-point |
+| Boolean | `"bool"` | true or false |
+| String | `"string"` | Text string |
+| List | `"list"` | Mutable array |
+| Dictionary | `"dict"` | Key-value map |
+| Tuple | `"tuple"` | Immutable sequence |
+| Range | `"range"` | Range object (e.g., `0..10`) |
+| Function | `"function"` | Function value |
+| Void | `"void"` | Null/void value |
+| Iterator | `"iterator"` | Iterator object |
+| Struct | `"struct"` | Struct instance |

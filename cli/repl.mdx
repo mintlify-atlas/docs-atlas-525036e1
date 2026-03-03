@@ -1,0 +1,302 @@
+---
+title: Interactive REPL
+description: Using the Walrus REPL for rapid prototyping and experimentation
+---
+
+The Walrus REPL (Read-Eval-Print Loop) provides an interactive environment for executing Walrus code, testing functions, and exploring language features.
+
+## Starting the REPL
+
+To start the REPL, run `walrus` without any file argument:
+
+```bash
+walrus
+```
+
+You'll see the REPL prompt:
+
+```
+>
+```
+
+## Basic usage
+
+Type Walrus code at the prompt and press Enter to execute:
+
+```walrus
+> 2 + 2
+> println("Hello, REPL!")
+Hello, REPL!
+> let x = 42
+> x * 2
+```
+
+## Features
+
+### Expression evaluation
+
+The REPL evaluates expressions immediately:
+
+```walrus
+> 10 + 5
+> 3.14 * 2
+> "Hello" + " " + "World"
+> [1, 2, 3, 4, 5]
+```
+
+### Variable persistence
+
+Variables defined in the REPL persist across statements:
+
+```walrus
+> let name = "Walrus"
+> let version = 1.0
+> f"{name} v{version}"
+```
+
+### Function definitions
+
+Define and call functions interactively:
+
+```walrus
+> fn square : x {
+      return x * x;
+  }
+> square(7)
+> fn factorial : n {
+      if n <= 1 {
+          return 1;
+      }
+      return n * factorial(n - 1);
+  }
+> factorial(5)
+```
+
+### Struct definitions
+
+Create and use structs:
+
+```walrus
+> struct Point {
+      fn new : x, y {
+          return {"x": x, "y": y};
+      }
+  }
+> let p = Point.new(10, 20)
+> p["x"]
+```
+
+### Import modules
+
+Load standard library modules:
+
+```walrus
+> import "std/math"
+> math.sqrt(16)
+> math.pi()
+> import "std/io"
+> io.write_file("test.txt", "Hello from REPL")
+```
+
+## REPL state
+
+The REPL maintains state throughout your session:
+
+- **Variables**: All `let` declarations persist
+- **Functions**: Defined functions remain available
+- **Structs**: Struct definitions are preserved
+- **Imports**: Modules are loaded once and cached
+
+```walrus
+> let counter = 0
+> counter = counter + 1
+> counter = counter + 1
+> counter
+```
+
+## Execution mode
+
+The REPL uses the **tree-walking interpreter** by default for immediate feedback. This provides:
+
+- Instant execution without compilation
+- Direct AST interpretation
+- Simplified debugging output
+
+Note: The REPL does not support bytecode compilation or JIT features.
+
+## Limitations
+
+### Single-line input only
+
+Currently, the REPL only supports single-line input. Multi-line constructs must be entered on one line:
+
+```walrus
+> for i in 0..5 { println(i); }
+```
+
+### No command history
+
+The REPL does not currently support:
+
+- Arrow key navigation through history
+- Tab completion
+- Line editing shortcuts
+
+### Empty lines
+
+Empty input is ignored:
+
+```walrus
+>
+>
+> println("Still here")
+```
+
+## Debugging in REPL
+
+Enable debug logging when starting the REPL:
+
+```bash
+walrus --debug
+```
+
+This shows internal execution details:
+
+```
+> let x = 42
+[DEBUG] AST > ...
+[DEBUG] Result > Int(42)
+>
+```
+
+Available logging levels:
+
+- `--verbose`: General information
+- `--debug`: Detailed debug output  
+- `--trace`: Complete execution trace
+
+```bash
+# Maximum verbosity
+walrus --trace
+```
+
+## Use cases
+
+### Quick calculations
+
+```walrus
+> 1024 * 1024
+> (100 + 50) / 2
+> 2 ** 10
+```
+
+### Testing algorithms
+
+```walrus
+> fn is_prime : n {
+      if n < 2 { return false; }
+      for i in 2..n {
+          if n % i == 0 { return false; }
+      }
+      return true;
+  }
+> is_prime(17)
+> is_prime(18)
+```
+
+### String manipulation
+
+```walrus
+> let text = "Hello, World!"
+> text[0..5]
+> len(text)
+> text[7..]
+```
+
+### Data structure exploration
+
+```walrus
+> let data = {"name": "Alice", "age": 30}
+> data["name"]
+> data["age"] = 31
+> data
+```
+
+### Function experimentation
+
+```walrus
+> let add = : a, b { return a + b; }
+> add(10, 20)
+> let multiply = : a, b { return a * b; }
+> multiply(5, 6)
+```
+
+### Learning the language
+
+The REPL is excellent for:
+
+- Testing syntax
+- Understanding operators
+- Exploring built-in functions
+- Experimenting with language features
+
+```walrus
+> type(42)
+> type(3.14)
+> type("hello")
+> type([1, 2, 3])
+> len([1, 2, 3, 4, 5])
+```
+
+## Exiting the REPL
+
+To exit the REPL:
+
+- Press `Ctrl+C` to interrupt
+- Press `Ctrl+D` (EOF) to exit gracefully
+- Use `sys.exit()` from the standard library:
+
+```walrus
+> import "std/sys"
+> sys.exit(0)
+```
+
+## Best practices
+
+### Keep expressions simple
+
+Since the REPL only supports single-line input, keep expressions concise:
+
+```walrus
+# Good
+> for i in 0..3 { println(i); }
+
+# Less readable
+> fn complex : x { let a = x * 2; let b = a + 3; return b; }
+```
+
+### Test before scripting
+
+Use the REPL to test functions before adding them to scripts:
+
+```walrus
+# Test in REPL first
+> fn fibonacci : n {
+      if n <= 1 { return n; }
+      return fibonacci(n - 1) + fibonacci(n - 2);
+  }
+> fibonacci(10)
+
+# Then move to script file
+```
+
+### Use REPL for documentation
+
+Explore built-in and standard library functions:
+
+```walrus
+> import "std/math"
+> math.sin(math.pi() / 2)
+> math.floor(3.7)
+> math.rand_int(1, 10)
+```

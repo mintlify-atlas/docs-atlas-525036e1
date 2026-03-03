@@ -1,0 +1,617 @@
+---
+title: Structs
+description: Learn how to define and use structs with static methods in Walrus
+---
+
+Structs in Walrus provide a way to organize related functions into namespaces. They're similar to classes in other languages but only support static methods.
+
+## Struct definition
+
+Define a struct using the `struct` keyword:
+
+```walrus
+struct Math {
+    fn add : a, b {
+        return a + b;
+    }
+    
+    fn multiply : a, b {
+        return a * b;
+    }
+}
+
+let result = Math.add(5, 3);
+println(result);  // 8
+```
+
+## Static methods
+
+All methods in structs are static and accessed using dot notation:
+
+```walrus
+struct Calculator {
+    fn add : a, b {
+        return a + b;
+    }
+    
+    fn subtract : a, b {
+        return a - b;
+    }
+    
+    fn multiply : a, b {
+        return a * b;
+    }
+    
+    fn divide : a, b {
+        if b == 0 {
+            return void;
+        }
+        return a / b;
+    }
+}
+
+println(Calculator.add(10, 5));       // 15
+println(Calculator.subtract(10, 5));  // 5
+println(Calculator.multiply(10, 5));  // 50
+println(Calculator.divide(10, 5));    // 2
+```
+
+## Constructor pattern
+
+While Walrus doesn't have traditional constructors, you can use a `new` method to create instances (dictionaries):
+
+```walrus
+struct Point {
+    fn new : x, y {
+        return {"x": x, "y": y};
+    }
+    
+    fn distance : p1, p2 {
+        let dx = p1["x"] - p2["x"];
+        let dy = p1["y"] - p2["y"];
+        return (dx * dx + dy * dy) ** 0.5;
+    }
+    
+    fn describe : point {
+        return f"({point['x']}, {point['y']})";
+    }
+}
+
+let p1 = Point.new(3, 4);
+let p2 = Point.new(0, 0);
+
+println(Point.describe(p1));        // (3, 4)
+println(Point.distance(p1, p2));    // 5.0
+```
+
+<Note>
+The `new` method is just a convention. You can name your constructor method anything you like.
+</Note>
+
+## Method calls within structs
+
+Methods can call other methods in the same struct by name:
+
+```walrus
+struct Calculator {
+    fn add : a, b {
+        return a + b;
+    }
+    
+    fn multiply : a, b {
+        return a * b;
+    }
+    
+    fn power : base, exp {
+        return base ** exp;
+    }
+    
+    fn complex_calc : x, y {
+        let sum = add(x, y);
+        let product = multiply(sum, 2);
+        return power(product, 2);
+    }
+}
+
+let result = Calculator.complex_calc(3, 4);
+println(result);  // 196 (((3 + 4) * 2) ** 2)
+```
+
+## Practical examples
+
+### Bank account system
+
+```walrus
+struct BankAccount {
+    fn create : name, initial_balance {
+        return {
+            "name": name,
+            "balance": initial_balance,
+            "transactions": 0
+        };
+    }
+    
+    fn deposit : account, amount {
+        account["balance"] = account["balance"] + amount;
+        account["transactions"] = account["transactions"] + 1;
+        return get_status(account);
+    }
+    
+    fn withdraw : account, amount {
+        if amount > account["balance"] {
+            return "Insufficient funds!";
+        }
+        account["balance"] = account["balance"] - amount;
+        account["transactions"] = account["transactions"] + 1;
+        return get_status(account);
+    }
+    
+    fn get_status : account {
+        return f"{account['name']} | Balance: ${account['balance']} | Txns: {account['transactions']}";
+    }
+}
+
+let alice = BankAccount.create("Alice", 1000);
+println(BankAccount.get_status(alice));
+println(BankAccount.deposit(alice, 500));
+println(BankAccount.withdraw(alice, 200));
+```
+
+### Game character system
+
+```walrus
+struct GameCharacter {
+    fn create : name, health, attack {
+        return {
+            "name": name,
+            "health": health,
+            "attack": attack,
+            "alive": true
+        };
+    }
+    
+    fn take_damage : char, damage {
+        char["health"] = char["health"] - damage;
+        if char["health"] <= 0 {
+            char["health"] = 0;
+            char["alive"] = false;
+        }
+        return show_status(char);
+    }
+    
+    fn heal : char, amount {
+        if char["alive"] {
+            char["health"] = char["health"] + amount;
+            return show_status(char);
+        }
+        return f"{char['name']} cannot be healed!";
+    }
+    
+    fn show_status : char {
+        let status = "ALIVE";
+        if not char["alive"] {
+            status = "DEFEATED";
+        }
+        return f"{char['name']} | HP: {char['health']} | ATK: {char['attack']} | {status}";
+    }
+    
+    fn battle : char1, char2 {
+        println(f"⚔️  {char1['name']} vs {char2['name']} ⚔️");
+        
+        while char1["alive"] and char2["alive"] {
+            println(f"{char1['name']} attacks!");
+            take_damage(char2, char1["attack"]);
+            println(show_status(char2));
+            
+            if char2["alive"] {
+                println(f"{char2['name']} counter-attacks!");
+                take_damage(char1, char2["attack"]);
+                println(show_status(char1));
+            }
+        }
+        
+        let winner = char1["name"];
+        if char2["alive"] {
+            winner = char2["name"];
+        }
+        return f"🏆 {winner} wins!";
+    }
+}
+
+let hero = GameCharacter.create("Hero", 100, 25);
+let dragon = GameCharacter.create("Dragon", 80, 30);
+
+println(GameCharacter.battle(hero, dragon));
+```
+
+### Validation utilities
+
+```walrus
+struct Validator {
+    fn is_email : text {
+        return "@" in text and "." in text;
+    }
+    
+    fn is_positive : num {
+        return num > 0;
+    }
+    
+    fn is_in_range : value, min, max {
+        return value >= min and value <= max;
+    }
+    
+    fn is_valid_age : age {
+        return is_positive(age) and is_in_range(age, 0, 150);
+    }
+}
+
+println(Validator.is_email("user@example.com"));  // true
+println(Validator.is_email("invalid"));           // false
+println(Validator.is_valid_age(25));              // true
+println(Validator.is_valid_age(-5));              // false
+```
+
+### String utilities
+
+```walrus
+struct StringUtils {
+    fn reverse : s {
+        if len(s) <= 1 {
+            return s;
+        }
+        return reverse(s[1..(-1)]) + s[0];
+    }
+    
+    fn is_palindrome : s {
+        return s == reverse(s);
+    }
+    
+    fn count_chars : s {
+        let count = {};
+        for i in 0..len(s) {
+            let char = s[i];
+            let key = char;
+            if key in count {
+                count[key] = count[key] + 1;
+            } else {
+                count[key] = 1;
+            }
+        }
+        return count;
+    }
+}
+
+println(StringUtils.reverse("hello"));         // "olleh"
+println(StringUtils.is_palindrome("racecar")); // true
+println(StringUtils.count_chars("hello"));     // Count of each character
+```
+
+### Math utilities
+
+```walrus
+struct MathUtils {
+    fn factorial : n {
+        if n <= 1 {
+            return 1;
+        }
+        return n * factorial(n - 1);
+    }
+    
+    fn fibonacci : n {
+        if n <= 1 {
+            return n;
+        }
+        return fibonacci(n - 1) + fibonacci(n - 2);
+    }
+    
+    fn is_prime : n {
+        if n < 2 {
+            return false;
+        }
+        let i = 2;
+        while i * i <= n {
+            if n % i == 0 {
+                return false;
+            }
+            i = i + 1;
+        }
+        return true;
+    }
+    
+    fn gcd : a, b {
+        while b != 0 {
+            let temp = b;
+            b = a % b;
+            a = temp;
+        }
+        return a;
+    }
+}
+
+println(MathUtils.factorial(5));    // 120
+println(MathUtils.fibonacci(10));   // 55
+println(MathUtils.is_prime(17));    // true
+println(MathUtils.gcd(48, 18));     // 6
+```
+
+## Organizing code with structs
+
+<Tabs>
+  <Tab title="Data structures">
+    ```walrus
+    struct Stack {
+        fn create : {
+            return {"items": []};
+        }
+        
+        fn push : stack, item {
+            stack["items"].push(item);
+        }
+        
+        fn pop : stack {
+            let items = stack["items"];
+            if len(items) == 0 {
+                return void;
+            }
+            let item = items[-1];
+            stack["items"] = items[0..(-1)];
+            return item;
+        }
+        
+        fn is_empty : stack {
+            return len(stack["items"]) == 0;
+        }
+    }
+    
+    let s = Stack.create();
+    Stack.push(s, 1);
+    Stack.push(s, 2);
+    Stack.push(s, 3);
+    println(Stack.pop(s));  // 3
+    ```
+  </Tab>
+  
+  <Tab title="API wrappers">
+    ```walrus
+    struct UserAPI {
+        fn get_user : id {
+            // Simulate API call
+            return {
+                "id": id,
+                "name": f"User {id}",
+                "active": true
+            };
+        }
+        
+        fn create_user : name {
+            // Simulate creation
+            return {
+                "id": 123,
+                "name": name,
+                "active": true
+            };
+        }
+        
+        fn deactivate_user : user {
+            user["active"] = false;
+            return user;
+        }
+    }
+    
+    let user = UserAPI.get_user(42);
+    println(user);
+    ```
+  </Tab>
+  
+  <Tab title="Formatters">
+    ```walrus
+    struct Formatter {
+        fn format_currency : amount {
+            return f"${amount}";
+        }
+        
+        fn format_percentage : value {
+            return f"{value * 100}%";
+        }
+        
+        fn format_phone : number {
+            // Simple format: (XXX) XXX-XXXX
+            return f"({number[0..3]}) {number[3..6]}-{number[6..10]}";
+        }
+    }
+    
+    println(Formatter.format_currency(1234.56));
+    println(Formatter.format_percentage(0.85));
+    println(Formatter.format_phone("5551234567"));
+    ```
+  </Tab>
+  
+  <Tab title="Constants">
+    ```walrus
+    struct Config {
+        fn get_max_retries : {
+            return 3;
+        }
+        
+        fn get_timeout : {
+            return 30;
+        }
+        
+        fn get_api_version : {
+            return "v2";
+        }
+        
+        fn get_debug_mode : {
+            return true;
+        }
+    }
+    
+    let retries = Config.get_max_retries();
+    let timeout = Config.get_timeout();
+    ```
+  </Tab>
+</Tabs>
+
+## Design patterns
+
+### Factory pattern
+
+```walrus
+struct ShapeFactory {
+    fn create_circle : radius {
+        return {
+            "type": "circle",
+            "radius": radius
+        };
+    }
+    
+    fn create_rectangle : width, height {
+        return {
+            "type": "rectangle",
+            "width": width,
+            "height": height
+        };
+    }
+    
+    fn area : shape {
+        if shape["type"] == "circle" {
+            return 3.14159 * shape["radius"] ** 2;
+        } else if shape["type"] == "rectangle" {
+            return shape["width"] * shape["height"];
+        }
+        return 0;
+    }
+}
+
+let circle = ShapeFactory.create_circle(5);
+let rect = ShapeFactory.create_rectangle(4, 6);
+
+println(ShapeFactory.area(circle));  // ~78.54
+println(ShapeFactory.area(rect));    // 24
+```
+
+### Builder pattern
+
+```walrus
+struct QueryBuilder {
+    fn create : {
+        return {
+            "table": "",
+            "where": [],
+            "limit": void
+        };
+    }
+    
+    fn from : query, table {
+        query["table"] = table;
+        return query;
+    }
+    
+    fn where : query, condition {
+        query["where"].push(condition);
+        return query;
+    }
+    
+    fn limit : query, n {
+        query["limit"] = n;
+        return query;
+    }
+    
+    fn build : query {
+        let sql = f"SELECT * FROM {query['table']}";
+        
+        if len(query["where"]) > 0 {
+            sql += f" WHERE {query['where'][0]}";
+        }
+        
+        if query["limit"] != void {
+            sql += f" LIMIT {query['limit']}";
+        }
+        
+        return sql;
+    }
+}
+
+let q = QueryBuilder.create();
+QueryBuilder.from(q, "users");
+QueryBuilder.where(q, "age > 18");
+QueryBuilder.limit(q, 10);
+
+let sql = QueryBuilder.build(q);
+println(sql);
+// SELECT * FROM users WHERE age > 18 LIMIT 10
+```
+
+## Best practices
+
+<AccordionGroup>
+  <Accordion title="Use structs for related functionality">
+    Group related functions into structs for better organization:
+    
+    ```walrus
+    // Good: related functions grouped
+    struct DateUtils {
+        fn is_leap_year : year { }
+        fn days_in_month : month, year { }
+        fn format_date : year, month, day { }
+    }
+    
+    // Avoid: unrelated functions in same struct
+    struct Utils {
+        fn is_leap_year : year { }
+        fn validate_email : email { }
+        fn calculate_distance : p1, p2 { }
+    }
+    ```
+  </Accordion>
+  
+  <Accordion title="Use 'new' for constructor methods">
+    Follow the convention of using `new` for creating instances:
+    
+    ```walrus
+    struct User {
+        fn new : name, email {
+            return {
+                "name": name,
+                "email": email,
+                "created_at": get_timestamp()
+            };
+        }
+    }
+    
+    let user = User.new("Alice", "alice@example.com");
+    ```
+  </Accordion>
+  
+  <Accordion title="Keep struct methods focused">
+    Each method should have a single, clear purpose:
+    
+    ```walrus
+    // Good: separate methods for separate concerns
+    struct User {
+        fn validate_email : email { }
+        fn validate_password : password { }
+        fn create : email, password { }
+    }
+    
+    // Avoid: doing too much in one method
+    struct User {
+        fn create_and_validate : email, password {
+            // Validation + creation mixed
+        }
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Format strings" icon="text" href="/language/format-strings">
+    Learn about f-string interpolation for dynamic text
+  </Card>
+  
+  <Card title="Standard library" icon="book" href="/stdlib/overview">
+    Explore built-in modules like std/io, std/sys, and std/math
+  </Card>
+</CardGroup>

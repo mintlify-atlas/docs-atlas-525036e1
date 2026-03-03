@@ -1,0 +1,159 @@
+---
+title: Virtual machine architecture
+description: Deep dive into Walrus's stack-based bytecode VM with call frames and shared locals
+---
+
+Walrus uses a stack-based virtual machine to execute compiled bytecode. The VM architecture is designed for efficiency, featuring proper call frames, a shared locals vector, and optimizations for common operations.
+
+## Stack-based execution
+
+The VM uses an operand stack for expression evaluation. Operations pop operands from the stack and push results back:
+
+```rust
+// Example: evaluating 2 + 3 * 4
+LoadConst(2)     // stack: [2]
+LoadConst(3)     // stack: [2, 3]
+LoadConst(4)     // stack: [2, 3, 4]
+Multiply         // stack: [2, 12]
+Add              // stack: [14]
+```
+
+The stack is implemented as a `Vec<Value>` in `src/vm/mod.rs:94`, where `Value` is a compact 16-byte enum representing all Walrus types.
+
+## Call frame architecture
+
+Unlike naive interpreters that create child VMs for each function call, Walrus uses a **call frame stack** for memory efficiency and deep recursion support.
+
+Each `CallFrame` tracks (from `src/vm/mod.rs:40`):
+
+- `return_ip`: instruction pointer to return to after the function completes
+- `frame_pointer`: index into the shared locals vector where this frame's variables start
+- `stack_pointer`: operand stack position when the frame started (for cleanup on return)
+- `instructions`: the function's bytecode (shared via `Rc` to avoid cloning)
+- `function_name`: for debugging and stack traces
+- `return_override`: optional value for struct constructors
+
+### Example call sequence
+
+```walrus
+fn add : x, y {
+    return x + y;
+}
+
+let result = add(5, 3);
+```
+
+Execution flow:
+
+1. **Setup**: Arguments are pushed to the operand stack: `[5, 3]`
+2. **Call opcode**: VM creates a new `CallFrame` with `frame_pointer = locals.len()`
+3. **Move arguments**: Arguments drain from stack to `locals` vector
+4. **Execute**: VM sets `ip = 0` and begins executing the function's bytecode
+5. **Return**: Result is pushed to caller's stack, frame is popped, `ip` restored
+
+## Shared locals vector
+
+All call frames share a single `Vec<Value>` for local variables (`src/vm/mod.rs:96`). Each frame's locals start at `frame_pointer` and are indexed relative to it:
+
+```rust
+// Load local variable at index 2
+let fp = self.frame_pointer();
+let value = self.locals[fp + 2];
+```
+
+This design:
+
+- Avoids per-frame allocations
+- Supports deep recursion without copying
+- Allows fast frame creation/destruction
+
+Locals are cleaned up with `PopLocal(n)` opcodes emitted by the compiler when scopes end.
+
+## Global variables
+
+Globals are stored separately in `globals: Vec<Value>` (`src/vm/mod.rs:100`), shared across all call frames. They're accessed via:
+
+- `LoadGlobal(index)` - load global variable
+- `StoreGlobal(index)` - store to global variable
+- `ReassignGlobal(index)` - update existing global
+
+The compiler uses specialized zero-operand opcodes (`LoadGlobal0` through `LoadGlobal3`) for the first four globals to reduce instruction size.
+
+## Memory model
+
+Heap-allocated values (strings, lists, dicts, functions) are stored in a global arena and referenced by typed keys. The VM never holds heap data directly:
+
+```rust
+pub enum Value {
+    Int(i64),
+    Float(FloatOrd<f64>),
+    Bool(bool),
+    String(StringKey),      // Key into string arena
+    List(ListKey),          // Key into list arena
+    Dict(DictKey),          // Key into dict arena
+    Function(FuncKey),      // Key into function arena
+    // ...
+}
+```
+
+The arena is implemented using `slotmap::DenseSlotMap` for type-safe, generation-indexed access (see `src/arenas.rs`).
+
+## Tail call optimization
+
+Walrus supports tail call optimization via the `TailCall` opcode. When the compiler detects a return statement that directly returns a function call, it emits `TailCall` instead of `Call`:
+
+```walrus
+fn factorial : n, acc {
+    if n <= 1 {
+        return acc;
+    }
+    return factorial(n - 1, n * acc);  // Tail call - reuses frame
+}
+```
+
+The `TailCall` opcode (handled in `src/vm/handlers/call.rs:160`):
+
+1. Pops the current frame before calling
+2. Reuses the current frame's slot
+3. Avoids stack growth for recursive calls
+
+This allows deep recursion without stack overflow.
+
+## Garbage collection integration
+
+The VM periodically triggers garbage collection based on allocation count and memory thresholds. GC roots are collected from:
+
+- Operand stack values
+- All local variables in the shared locals vector
+- All global variables
+- Constants in all call frames' instruction sets
+
+```rust
+fn collect_roots(&self) -> Vec<Value> {
+    let mut roots = Vec::new();
+    roots.extend(self.stack.iter().copied());
+    roots.extend(self.locals.iter().copied());
+    roots.extend(self.globals.iter().copied());
+    for frame in &self.call_stack {
+        roots.extend(frame.instructions.constants.iter().copied());
+    }
+    roots
+}
+```
+
+See [garbage collection](/advanced/garbage-collection) for details on the mark-and-sweep algorithm.
+
+## Performance characteristics
+
+- **Frame creation**: O(1) - just push to call stack
+- **Local variable access**: O(1) - direct indexing with frame pointer
+- **Global variable access**: O(1) - direct indexing
+- **Heap operations**: O(1) - key-based lookup in DenseSlotMap
+- **Stack operations**: Amortized O(1) - standard Vec operations
+
+## Source references
+
+- VM struct definition: `src/vm/mod.rs:94`
+- CallFrame definition: `src/vm/mod.rs:40`
+- Main execution loop: `src/vm/mod.rs:447`
+- Call handling: `src/vm/handlers/call.rs`

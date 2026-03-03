@@ -1,0 +1,178 @@
+---
+title: Web scraper
+description: Example program combining std/io and std/sys for a practical application
+---
+
+This example demonstrates a practical program that combines multiple standard library modules to create a simple web scraper simulator that processes data and generates reports.
+
+## Complete program
+
+```walrus
+import "std/io";
+import "std/sys";
+
+// Simulate fetching web page content
+fn fetch_page : url {
+    println(f"Fetching: {url}");
+    // In a real scraper, this would fetch actual web content
+    return "Sample page content with multiple words and links.";
+}
+
+// Count words in text
+fn count_words : text {
+    let words = text.split(" ");
+    return len(words);
+}
+
+// Extract statistics from content
+fn analyze_content : content {
+    let word_count = count_words(content);
+    let char_count = len(content);
+    
+    return {
+        "words": word_count,
+        "chars": char_count,
+        "avg_word_len": char_count / word_count
+    };
+}
+
+// Generate HTML report
+fn generate_report : url, stats {
+    let html = "<html>\n";
+    html += "<head><title>Scraper Report</title></head>\n";
+    html += "<body>\n";
+    html += f"<h1>Report for {url}</h1>\n";
+    html += f"<p>Word count: {stats['words']}</p>\n";
+    html += f"<p>Character count: {stats['chars']}</p>\n";
+    html += f"<p>Average word length: {stats['avg_word_len']}</p>\n";
+    html += "</body>\n";
+    html += "</html>\n";
+    return html;
+}
+
+// Main program
+let args = sys.args();
+
+if len(args) < 2 {
+    println("Usage: walrus web_scraper.walrus <url>");
+    sys.exit(1);
+}
+
+let url = args[1];
+println(f"Starting web scraper...");
+println(f"Working directory: {sys.cwd()}");
+
+// Fetch and analyze
+let content = fetch_page(url);
+let stats = analyze_content(content);
+
+// Generate report
+let report = generate_report(url, stats);
+let output_file = "/tmp/scraper_report.html";
+
+io.write_file(output_file, report);
+println(f"Report saved to: {output_file}");
+
+// Display summary
+println("\nSummary:");
+println(f"  URL: {url}");
+println(f"  Words: {stats['words']}");
+println(f"  Characters: {stats['chars']}");
+println(f"  Average word length: {stats['avg_word_len']}");
+
+println("\nDone!");
+```
+
+## How to run
+
+Save the code to a file called `web_scraper.walrus` and run it with a URL argument:
+
+```bash
+walrus web_scraper.walrus https://example.com
+```
+
+## Expected output
+
+```
+Starting web scraper...
+Working directory: /home/user/projects
+Fetching: https://example.com
+Report saved to: /tmp/scraper_report.html
+
+Summary:
+  URL: https://example.com
+  Words: 8
+  Characters: 50
+  Average word length: 6
+
+Done!
+```
+
+## Generated HTML report
+
+The program generates an HTML file at `/tmp/scraper_report.html`:
+
+```html
+<html>
+<head><title>Scraper Report</title></head>
+<body>
+<h1>Report for https://example.com</h1>
+<p>Word count: 8</p>
+<p>Character count: 50</p>
+<p>Average word length: 6</p>
+</body>
+</html>
+```
+
+## Features demonstrated
+
+### Command-line arguments
+
+```walrus
+let args = sys.args();
+if len(args) < 2 {
+    println("Usage: walrus web_scraper.walrus <url>");
+    sys.exit(1);
+}
+let url = args[1];
+```
+
+### Environment information
+
+```walrus
+println(f"Working directory: {sys.cwd()}");
+```
+
+### File writing
+
+```walrus
+io.write_file(output_file, report);
+```
+
+### Data structures
+
+```walrus
+return {
+    "words": word_count,
+    "chars": char_count,
+    "avg_word_len": char_count / word_count
+};
+```
+
+## Key concepts
+
+- **Module imports**: Combining `std/io` and `std/sys` modules
+- **Command-line arguments**: Using `sys.args()` to get user input
+- **Error handling**: Checking argument count and exiting with status codes
+- **File I/O**: Writing generated reports to disk
+- **String manipulation**: Building HTML with format strings
+- **Dictionaries**: Organizing statistics in structured data
+- **Functions**: Breaking down complex tasks into reusable components
+
+## Extension ideas
+
+- Add support for multiple URLs
+- Process real HTTP responses (when network support is added)
+- Parse HTML content to extract links
+- Save results to different formats (JSON, CSV)
+- Add logging to track scraping progress
